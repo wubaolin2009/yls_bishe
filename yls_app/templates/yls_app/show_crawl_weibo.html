@@ -4,35 +4,38 @@
 
 {% block content %}
 
-<div class="container">
-  <div class="row">
-    <div class="offset2 span5">
-      <div id="family_show">
-        <div class = "row-fluid">
-          <div class="span8"> 
-            <h4>Features for this family</h4>            
-          </div>
-          <div class="span4">
-            <div class="btn-group">
-              <button id="btn_current_family" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                Loki
-                <span class="caret"></span>
-              </button>
-              <ul id="btn_families" class="dropdown-menu">
-                <li><a id="family_loki" href="#">Loki</a></li>
-                <li><a id="family_tn8"  href="#">Tn8</a></li>
-                <li class="divider"></li>
-                <li><a id="family_add" href="#">Add new feature</a></li>
-              </ul>
-            </div>          
-          </div>
-        </div>        
-      </div>
-    </div>
+<div class="row">
+  <div class="col-md-6">
+      新建抓取任务 <br>
+      当前状态:  {{status}} <br>
+      {{content}}
+      {% if status == 没有登录 %}
+      <a id="add_weibo_button" class="btn btn-success" type="button">登录微博</a>
+      {% else %}
+        {% if is_fetching == False %}
+        <a id="add_weibo_button" class="btn btn-info" href='/yls_app/fetch_weibo' class="btn btn-success" type="button">抓取微博</a>
+        {% else %}
+        <a id="add_weibo_button" class="btn btn-danger" type="button">正在抓取</a>
+        {% endif %}
+      {% endif %}
+  </div>
+  <div class="col-md-6">
+      当前抓取结果: {{fetched_count}} 个文件被抓取   
   </div>
 </div>
 
-
 {% endblock %}
 
+{% block extra_js %}
 <script>
+
+$(document).ready(function(event){
+{% if status == 没有登录 %}
+  $('#add_weibo_button').click(function(event){
+    window.location = "{{qq_login_url}}";
+  });
+{% endif %}
+});
+</script>
+{% endblock %}
+

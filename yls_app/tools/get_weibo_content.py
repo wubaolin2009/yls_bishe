@@ -18,7 +18,7 @@ users = aa.readlines()
 aa.close()
 nicks = dict()
 for line in users:
-	line = line.replace('\n', '')
+	line = line.replace('\n', ''):q
 	line = line.decode('utf-8')
 	user_nick, friend = line.split('::::')
 	user,nick = user_nick.split(',')
