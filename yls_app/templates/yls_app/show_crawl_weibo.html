@@ -1,0 +1,38 @@
+{% extends "yls_app/base.html" %}
+
+{% block title %} 微博抓取 {% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="offset2 span5">
+      <div id="family_show">
+        <div class = "row-fluid">
+          <div class="span8"> 
+            <h4>Features for this family</h4>            
+          </div>
+          <div class="span4">
+            <div class="btn-group">
+              <button id="btn_current_family" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                Loki
+                <span class="caret"></span>
+              </button>
+              <ul id="btn_families" class="dropdown-menu">
+                <li><a id="family_loki" href="#">Loki</a></li>
+                <li><a id="family_tn8"  href="#">Tn8</a></li>
+                <li class="divider"></li>
+                <li><a id="family_add" href="#">Add new feature</a></li>
+              </ul>
+            </div>          
+          </div>
+        </div>        
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+<script>

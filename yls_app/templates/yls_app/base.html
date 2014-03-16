@@ -1,0 +1,52 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!--link rel="shortcut icon" href="../../docs-assets/ico/favicon.png"-->
+
+    <title>{% block title %} 欢迎 {% endblock %}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'yls_app/css/bootstrap.css' %}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'yls_app/css/jumbotron-narrow.css' %}" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="header">
+        <ul class="nav nav-pills pull-right">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="/yls_app/crawl_weibo">抓取腾讯微博</a></li>
+          <li><a href="#">微博处理</a></li>
+        </ul>
+        <h3 class="text-muted">杨柳杉的毕设</h3>
+      </div>
+
+      {% block content %} {% endblock %}
+
+      {% block footer %}
+      <div class="footer">
+        <p>&copy; Sequoia Yang 2014</p>
+      </div>
+      {% endblock %}
+
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="{% static 'yls_app/js/jquery-2.1.0.js' %}"></script>
+    <script src="{% static 'yls_app/js/bootstrap.js' %}"></script>
+    {% block extra_js %}
+    {% endblock %}
+  </body>
+</html>
