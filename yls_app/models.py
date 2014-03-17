@@ -1,38 +1,51 @@
 from django.db import models
+import datetime
 
-# Create your models here.
-#class Family(models.Model):
-#   serial_name = models.CharField(max_length=20,
-#                                  help_text=_('Family of your product config'))
-#   code_name = models.CharField(max_length=20,
-#                                primary_key=True,
-#                                validators = [RegexValidator(
-#               r'[a-z].[a-z]*_*[a-z]*[0-9]*',
-#               'only low case char and number and "_" is allowed',
-#               'code name'
-#           ),
-#           MinLengthValidator(3),
-#           MaxLengthValidator(20),
-#       ])
-#   is_alias_product = models.BooleanField(default=False)
+class Task(models.Model):
+	TYPE_CUT="TYPE_CUT"
+	TYPE_RUNLDA="TYPE_RUNLDA"
+	TYPE_CONVERT_RAW_TOKEN="TYPE_CONVERT_RAW_TOKEN"
+	TYPE_CHOICES = (
+		(TYPE_CUT, 'Cut the document to words'),
+		(TYPE_RUNLDA, 'Run LDA to find topics.'),
+	)
+	task_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
 
-#    TYPE_OPTION="TYPE_OPTION"
-#   TYPE_UPLOAD="TYPE_UPLOAD"
-#   TYPE_EDITBOX="TYPE_EDITBOX"
-#   TYPE_CHECKBOX = "TYPE_CHECKBOX"
-#   TYPE_OPTION_SKU_FAB="TYPE_OPTION_SKU_FAB"
+	TASK_STATUS_NOT_START="STARTUS_NOT_START"
+	TASK_STATUS_STARTED="STATUS_STARTED"
+	TASK_STATUS_SUCCESS="STATUS_SUCCESS"
+	TASK_STATUS_FAIL="STATUS_FAIL"
+	TYPE_STATUS_CHOICES = (
+		(TASK_STATUS_NOT_START, 'Not Started'),
+		(TASK_STATUS_STARTED, 'Started'),
+		(TASK_STATUS_SUCCESS, "Task Success"),
+		(TASK_STATUS_FAIL, "Task Failed"),
+	)
+	task_status = models.CharField(max_length=30, choices=TYPE_STATUS_CHOICES)
 
-#   INPUT_TYPES = (
-#       (TYPE_OPTION, "Select feature via radio button"),
-#       (TYPE_UPLOAD, "Upload a file"),
-#       (TYPE_EDITBOX,"Input feature via text"),
-#       (TYPE_CHECKBOX, "Check Box for a feature"),
-#       (TYPE_OPTION_SKU_FAB,"Select feature via radiobuttons and two extra text field"),)
+	infomation = models.CharField(max_length=30000)
 
-#   feature_type = models.CharField(max_length=20,
-#                                   choices=FEATURES_TYPES,
-#                                   help_text=_("Feature's type"))
+	start_time = models.DateTimeField()
 
-#   feature_choices = models.ManyToManyField(SelectableFeatureChoices,
-#                                             verbose_name="Choice to feature")
+	end_time = models.DateTimeField()
 
+	@staticmethod
+	def get_date_time():
+		return str(datetime.datetime.today())
+
+	@staticmethod
+	def create_new_convert_token_task(from_file, to):
+		t = Task()
+		t.task_type = Task.TYPE_CONVERT_RAW_TOKEN
+		t.task_status = Task.TASK_STATUS_NOT_START
+		t.infomation = "from:" + from_file + ' to:' + to + ' '
+		t.start_time = Task.get_date_time()
+		t.end_time = t.start_time
+		t.save()
+		return t
+
+	@staticmethod
+	def finish_task(t, success=False):
+		t.end_time = Task.get_date_time()
+		t.task_status = Task.TASK_STATUS_SUCCESS if success else Task.TASK_STATUS_FAIL
+		t.save()

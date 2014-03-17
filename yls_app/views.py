@@ -5,6 +5,11 @@ from django.http import HttpResponseRedirect
 from django.http import Http404
 from yls_app import qqweibo_sdk
 from ajax_requests import AjaxHandler
+from ajax_requests import MeaningfulWordsHandler
+import json
+from yls_app.models import *
+from yls_app.ajax_requests import LDAHandler
+
 
 # Create your views here.
 
@@ -52,8 +57,10 @@ def show_crawl_weibo(request):
 	render_dict = {
 				'is_fetching':False,
 				'status':status,
+				'is_logged_in': status == u'已登录',
 				'qq_login_url': client.get_authorize_url(),
 				'fetched_count': AjaxHandler.get_fetched_count(),
+				'tokened_count': AjaxHandler.get_tokenized_count(),
 	}
 
 	#if status == u'已登录':
@@ -72,9 +79,31 @@ def get_qq_token(request):
 def fetch_weibo(request):	
 	raise Http404
 
-# Handle Ajax Requests
+def view_meaningful_words(request):
+	contents = MeaningfulWordsHandler.read_raw_token_file()[0:10]
+	return render(request, 'yls_app/show_meaningful_words.html', {
+		'contents' : contents,
+	})
 
+def del_meaningful_word(request):
+	word = request.GET['word']
+	payload = {'word': word}
+	try:
+		MeaningfulWordsHandler.del_meaningful_word(word)
+	except Exception,e:
+		assert False, e
+		payload['word'] = 'SERVER_RET_ERROR'
+	return HttpResponse(json.dumps(payload), mimetype="application/json")
 
+def start_cut(request):
+	raise Http404
 
+def start_lda(request):
+	raise Http404
 
+def view_topics(request):
+	raise Http404
 
+def convert_to_final_dict(request):
+	LDAHandler.convert_from_raw_tokenized()
+	return HttpResponseRedirect('yls_app/crawl_weibo')

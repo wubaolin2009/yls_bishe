@@ -1,0 +1,46 @@
+{% extends "yls_app/base.html" %}
+
+{% block title %} 有意义的词语 {% endblock %}
+
+{% block content %}
+<div class="panel panel-primary">
+  <!-- Default panel contents -->
+  <div class="panel-heading">有意义的词</div>
+  <div class="panel-body">
+    <p>通过读取抓取到的所有用户微博统计出的词语，用于LDA中。用户可以删除相应的词.</p>
+  </div>
+  <!-- Table -->
+  <table class="table" border="1">
+    <tr>
+      <th><a class="btn hidden btn-danger" type="button">删除</a></th>
+      <th>单词</th>
+      <th>词频</th>      
+    </tr>
+    {% for aword in contents %}
+    <tr id = 'tr_{{aword.0}}'>
+      <td><a name="delete_token" id="{{aword.0}}" class="btn btn-danger" type="button">删除</a></td>
+      <td style="vertical-align:middle">{{aword.0}}</td>
+      <td style="vertical-align:middle">{{aword.1}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function(event){
+  $("a[name='delete_token']").click(function(event){
+    var id = event.target.id;
+    $.get("/yls_app/del_meaningful_word", {word:id},
+      function(data, textStatus) {
+        //alert('returned data:' + data['word']);
+        $('#tr_'+data['word']).remove();
+      }, "json" );
+  });
+});
+</script>
+{% endblock %}
+

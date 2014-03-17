@@ -9,18 +9,26 @@
       新建抓取任务 <br>
       当前状态:  {{status}} <br>
       {{content}}
-      {% if status == 没有登录 %}
+      {% if is_logged_in == False %}
       <a id="add_weibo_button" class="btn btn-success" type="button">登录微博</a>
       {% else %}
         {% if is_fetching == False %}
-        <a id="add_weibo_button" class="btn btn-info" href='/yls_app/fetch_weibo' class="btn btn-success" type="button">抓取微博</a>
+        <a class="btn btn-info" href='/yls_app/fetch_weibo' class="btn btn-success" type="button">抓取微博</a>
         {% else %}
-        <a id="add_weibo_button" class="btn btn-danger" type="button">正在抓取</a>
+        <br>
+        <a class="btn btn-danger" type="button">正在抓取</a>        
         {% endif %}
       {% endif %}
+      <br>
+      <a href='/yls_app/start_cut' class="btn btn-success" type="button">开始分词</a><br>
+      <a href='/yls_app/view_meaningful_words' class="btn btn-danger" type="button">查看有意义词</a><br>
+      <a href='/yls_app/convert_to_final_dict' class="btn btn-primary" type="button">转换最终词典</a><br>
+      <a class="btn btn-success" href='/yls_app/start_lda' type="button">开始LDA</a><br>
+      <a  class="btn btn-default" href='/yls_app/view_topics' type="button">查看结果</a>
   </div>
   <div class="col-md-6">
-      当前抓取结果: {{fetched_count}} 个文件被抓取   
+      当前抓取结果: {{fetched_count}} 个文件被抓取 <br>
+      当前分词结果: {{tokened_count}} 个文件已经分词
   </div>
 </div>
 
@@ -30,7 +38,7 @@
 <script>
 
 $(document).ready(function(event){
-{% if status == 没有登录 %}
+{% if is_logged_in == False %}
   $('#add_weibo_button').click(function(event){
     window.location = "{{qq_login_url}}";
   });
