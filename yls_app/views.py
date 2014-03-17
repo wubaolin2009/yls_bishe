@@ -46,10 +46,9 @@ def show_crawl_weibo(request):
 		request.session['qqweibo_access_token'] = access_token
 		status = u'已登录'
 	elif 'qqweibo_code' not in request.session.keys():
-		# Invalid  state
-		#assert False, request.session.keys()
+		# Do Nothing
 		url = client.get_authorize_url()
-		return HttpResponseRedirect(url)
+		# return HttpResponseRedirect(url)
 	else:
 		client.set_access_token(request.session['qqweibo_access_token'])
 		status = u'已登录'

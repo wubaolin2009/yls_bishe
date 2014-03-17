@@ -40,7 +40,7 @@
 $(document).ready(function(event){
 {% if is_logged_in == False %}
   $('#add_weibo_button').click(function(event){
-    window.location = "{{qq_login_url}}";
+    window.location = "{{qq_login_url | safe}}";
   });
 {% endif %}
 });
