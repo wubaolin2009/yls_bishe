@@ -28,7 +28,24 @@
   </div>
   <div class="col-md-6">
       当前抓取结果: {{fetched_count}} 个文件被抓取 <br>
-      当前分词结果: {{tokened_count}} 个文件已经分词
+      当前分词结果: {{tokened_count}} 个文件已经分词 <br>
+      <div class="panel panel-primary">
+        <!-- Default panel contents -->
+        <div class="panel-heading">任务状态</div>
+        <!-- Table -->
+        <table class="table" border="1">
+          <tr>
+            <th><a class="btn hidden btn-danger" type="button"></a></th>
+            <th>单词</th>
+            <th>词频</th>      
+          </tr>
+          <tr id = 'xxxx'>
+            <td><a name="delete_token" id="xxx" class="btn btn-danger" type="button">删除</a></td>
+            <td style="vertical-align:middle">1111</td>
+            <td style="vertical-align:middle">2222</td>
+          </tr>
+        </table>
+      </div>
   </div>
 </div>
 
