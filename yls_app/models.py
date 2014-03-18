@@ -8,10 +8,11 @@ class Task(models.Model):
 	TYPE_CHOICES = (
 		(TYPE_CUT, 'Cut the document to words'),
 		(TYPE_RUNLDA, 'Run LDA to find topics.'),
+		(TYPE_CONVERT_RAW_TOKEN, 'Convert to Raw data'),
 	)
 	task_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
 
-	TASK_STATUS_NOT_START="STARTUS_NOT_START"
+	TASK_STATUS_NOT_START="STATUS_NOT_START"
 	TASK_STATUS_STARTED="STATUS_STARTED"
 	TASK_STATUS_SUCCESS="STATUS_SUCCESS"
 	TASK_STATUS_FAIL="STATUS_FAIL"

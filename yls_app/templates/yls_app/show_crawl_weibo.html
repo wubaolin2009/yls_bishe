@@ -5,12 +5,12 @@
 {% block content %}
 
 <div class="row">
-  <div class="col-md-6">
+  <div class="col-md-3">
       新建抓取任务 <br>
       当前状态:  {{status}} <br>
       {{content}}
       {% if is_logged_in == False %}
-      <a id="add_weibo_button" class="btn btn-success" type="button">登录微博</a>
+      <a id="add_weibo_button" class="btn btn-info" type="button">登录微博</a>
       {% else %}
         {% if is_fetching == False %}
         <a class="btn btn-info" href='/yls_app/fetch_weibo' class="btn btn-success" type="button">抓取微博</a>
@@ -26,33 +26,72 @@
       <a class="btn btn-success" href='/yls_app/start_lda' type="button">开始LDA</a><br>
       <a  class="btn btn-default" href='/yls_app/view_topics' type="button">查看结果</a>
   </div>
-  <div class="col-md-6">
+  <div class="col-md-9">
       当前抓取结果: {{fetched_count}} 个文件被抓取 <br>
       当前分词结果: {{tokened_count}} 个文件已经分词 <br>
       <div class="panel panel-primary">
         <!-- Default panel contents -->
-        <div class="panel-heading">任务状态</div>
+        <div class="panel-heading">最近任务状态
+          <th><a id='refresh_task' class="btn btn-success" type="button">刷新任务</a></th>
+          <th><a id='view_all_task' class="btn btn-danger" type="button">查看所有任务</a></th> 
+        </div>
         <!-- Table -->
-        <table class="table" border="1">
-          <tr>
-            <th><a class="btn hidden btn-danger" type="button"></a></th>
-            <th>单词</th>
-            <th>词频</th>      
-          </tr>
-          <tr id = 'xxxx'>
-            <td><a name="delete_token" id="xxx" class="btn btn-danger" type="button">删除</a></td>
-            <td style="vertical-align:middle">1111</td>
-            <td style="vertical-align:middle">2222</td>
+        <table class="table" border="1" id="table_tasks">
+          <tr>            
+            <th>任务类型</th>
+            <th>任务状态</th>
+            <th>起始时间</th>
+            <th>结束时间</th>         
           </tr>
         </table>
       </div>
   </div>
 </div>
 
+<!-- THe modal to show all tasks -->
+<div id="modal_show_all_tasks" class="modal fade">
+  <div class="col-md-12">
+      <div class="panel panel-success">
+        <!-- Default panel contents -->
+        <div class="panel-heading">所有任务状态
+          <a class="btn btn-danger" onclick="$('#modal_show_all_tasks').modal('hide');" type="button">关闭</a>
+        </div>
+        <!-- Table -->
+        <table class="table" border="1" id="table_tasks_modal">
+          <tr>            
+            <th>任务类型</th>
+            <th>任务状态</th>
+            <th>起始时间</th>
+            <th>结束时间</th>
+            <th>详细信息</th>        
+          </tr>
+        </table>
+      </div>
+  </div>  
+</div>
+
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
+
+function append_tr(max_line, max_col, data, table_name, tr_name)
+{
+  var count = 0;
+  for (var task in data) {
+    count += 1;
+    var str_to_append = "<tr name = '"+tr_name+"'>";
+    for(var value in data[task]) {
+      //console.log(value);
+      if (value >= max_col) break;
+      str_to_append += "<td style='vertical-align:middle'>" + data[task][value] + "</td>";
+    }
+    str_to_append += "</tr>"
+    $("#" + table_name).append(str_to_append)
+    if (count >= max_line) return;
+  }
+}
 
 $(document).ready(function(event){
 {% if is_logged_in == False %}
@@ -60,6 +99,30 @@ $(document).ready(function(event){
     window.location = "{{qq_login_url | safe}}";
   });
 {% endif %}
+  var type_cut = "TYPE_CUT";
+  var type_lda = "TYPE_RUNLDA";
+  var type_convert = 'TYPE_CONVERT_RAW_TOKEN';
+  var max_entry = 4;
+  $('#refresh_task').click(function(event){
+    // remove the current view
+    $("tr[name='task_']").remove();
+    // get new view and append to the table
+    $.get("/yls_app/get_tasks", {},
+       function(data, textStatus) {
+        append_tr(max_entry, 4, data, 'table_tasks', 'task_');
+      }, "json" );
+  });
+
+  $('#view_all_task').click(function(event) {
+    $.get("/yls_app/get_tasks", {},
+       function(data, textStatus) {
+        $("tr[name='task_modal_']").remove();
+        append_tr(40, 5, data, 'table_tasks_modal', 'task_modal_');
+        $('#modal_show_all_tasks').modal('show');
+       },"json" );
+  });
+
+  $('#refresh_task').click(); //Trigger to get task status
 });
 </script>
 {% endblock %}

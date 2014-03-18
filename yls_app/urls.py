@@ -13,4 +13,5 @@ urlpatterns = patterns('',
     url(r'view_topics', views.view_topics, name="start_cut"),
     url(r'del_meaningful_word', views.del_meaningful_word, name="del_meaningful_word"),
     url(r'convert_to_final_dict', views.convert_to_final_dict, name="convert_to_final_dict"),
+    url(r'get_tasks', views.get_tasks, name='get_tasks'),
 )

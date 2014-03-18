@@ -53,6 +53,10 @@ def show_crawl_weibo(request):
 		client.set_access_token(request.session['qqweibo_access_token'])
 		status = u'已登录'
 
+	# Get the tasks status
+	tasks = [Task.TYPE_CUT, Task.TYPE_CONVERT_RAW_TOKEN, Task.TYPE_RUNLDA]
+	tasks_lists = [ AjaxHandler.get_tasks(t) for t in tasks]	
+
 	render_dict = {
 				'is_fetching':False,
 				'status':status,
@@ -106,3 +110,23 @@ def view_topics(request):
 def convert_to_final_dict(request):
 	LDAHandler.convert_from_raw_tokenized()
 	return HttpResponseRedirect('yls_app/crawl_weibo')
+
+
+def get_tasks(request):
+	task_type = [t[0] for t in Task.TYPE_CHOICES]
+	if 'task_type'  in request.GET.keys():
+		if request.GET['task_type'] not in task_type:
+			raise Http404
+		task_type = [request.GET['task_type']]
+	return_result = []
+	for i in task_type:		
+		task_lists = AjaxHandler.get_tasks(i)		
+		for t in task_lists:
+			t_type = t.task_type.replace('TYPE_','')
+			t_status = t.task_status.replace('STATUS_', '')
+			t_start = str(t.start_time).split('.')[0] + '.' + str(t.start_time).split('.')[1][0:2]
+			t_end = str(t.end_time).split('.')[0] + '.' + str(t.end_time).split('.')[1][0:2]
+			return_result.append([t_type, t_status, t_start, t_end, str(t.infomation)])
+	return HttpResponse(json.dumps(return_result), mimetype="application/json")
+
+

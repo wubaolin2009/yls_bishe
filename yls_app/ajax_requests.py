@@ -21,16 +21,11 @@ class AjaxHandler(object):
 		#assert False, os.getcwd() + path
 		return os.popen('ls -l ' + path + '/ | wc -l').read()
 
-	# 得到最后一个任务的状态
+	# 得到某个类型任务的状态
 	@staticmethod
-	def get_last_task_status(task_type):
-		pass
-
-	# 得到最后一个任务的状态
-	# return: (info, start_time, end_time)
-	@staticmethod
-	def get_last_task_infomation(task_type):
-		pass
+	def get_tasks(task_type):
+		task_lists = Task.objects.all().order_by('-start_time')
+		return task_lists
 
 class MeaningfulWordsHandler(object):
 	# meaningful words file
