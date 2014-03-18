@@ -1,0 +1,35 @@
+{% extends "yls_app/base.html" %}
+
+{% block title %} 欢迎电商网站 {% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-3">
+      可以进行的任务
+      <br>
+      <a href='#' class="btn btn-success" type="button">发现商品</a><br>
+      <a href='/yls_app/view_meaningful_words' class="btn btn-danger" type="button">抓取商品描述</a><br>
+      <a href='/yls_app/convert_to_final_dict' class="btn btn-primary" type="button">抓取商品评论</a><br>
+      <a href='/yls_app/convert_to_final_dict' class="btn btn-warning" type="button">查看商品</a><br>
+      <!--<a href='/yls_app/convert_to_final_dict' class="btn btn-info" type="button">分词</a><br>-->
+      <!--<a href='/yls_app/convert_to_final_dict' class="btn btn-success" type="button">运行LDA</a><br>-->
+  </div>
+  <div class="col-md-9">
+      <div class="panel panel-primary">
+        <!-- Default panel contents -->
+        <div class="panel-heading">服务器抓取情况:
+        </div>
+        <!-- Table -->
+        <table class="table" border="2" id="table_tasks">
+          <tr>            
+            <th>任务</th>
+            <th>已完成</th>
+            <th>目标</th>
+          </tr>
+        </table>
+      </div>
+  </div>
+</div>
+
+{% endblock %}

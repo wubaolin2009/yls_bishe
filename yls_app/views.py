@@ -14,22 +14,24 @@ from yls_app.ajax_requests import LDAHandler
 # Create your views here.
 
 def index(request):
-	context = {'which_side_bar_to_select': 0}
+	context = {'which_side_bar_to_select': 0,
+		'qq_status': get_current_qq_status(request)
+	}
 	return render(request, 'yls_app/index.html', context)
     # raise Http404
     # poll = get_object_or_404(Poll, pk=poll_id)
+
+# TODO: save the sdk to db and use alternative client ids
+def get_qqweibo_client():
+	#return qqweibo_sdk.Client.get_client('801486696', 'c45b2b1afb0eae1e64466f7c9fd36319', redirect_uri='http://10.19.225.80:12333/yls_app/get_qq_token')
+	return qqweibo_sdk.Client('801486696', 'c45b2b1afb0eae1e64466f7c9fd36319', redirect_uri='http://10.19.225.80:12333/yls_app/get_qq_token')
 
 def show_crawl_weibo(request):
 	''' involves 3 phrase
 		1. get url then redirect user to that.
 		2. get the code and set it to session[qq_code], then redirect it to show_crawl_weibo 2nd times
 		3. get the access_token '''
-
-	# TODO: save the sdk to db and use alternative client ids
-	def get_qqweibo_client():
-		#return qqweibo_sdk.Client.get_client('801486696', 'c45b2b1afb0eae1e64466f7c9fd36319', redirect_uri='http://10.19.225.80:12333/yls_app/get_qq_token')
-		return qqweibo_sdk.Client('801486696', 'c45b2b1afb0eae1e64466f7c9fd36319', redirect_uri='http://10.19.225.80:12333/yls_app/get_qq_token')
-
+	
 	client = get_qqweibo_client()
 	status = u'没有登录'
 	if 'qqweibo_authorition_url' not in request.session.keys():
@@ -55,14 +57,13 @@ def show_crawl_weibo(request):
 
 	# Get the tasks status
 	tasks = [Task.TYPE_CUT, Task.TYPE_CONVERT_RAW_TOKEN, Task.TYPE_RUNLDA]
-	tasks_lists = [ AjaxHandler.get_tasks(t) for t in tasks]	
+	tasks_lists = [ AjaxHandler.get_tasks(t) for t in tasks]
 
 	render_dict = {
 				'which_side_bar_to_select': 1, # tengxun weibo selected
+				'qq_status': get_current_qq_status(request),
 				'is_fetching':False,
 				'status':status,
-				'is_logged_in': status == u'已登录',
-				'qq_login_url': client.get_authorize_url(),
 				'fetched_count': AjaxHandler.get_fetched_count(),
 				'tokened_count': AjaxHandler.get_tokenized_count(),
 	}
@@ -83,11 +84,18 @@ def get_qq_token(request):
 def fetch_weibo(request):	
 	raise Http404
 
+# [is_logined_in, login_name if logged else logged_in url]
+def get_current_qq_status(request):
+	if 'qqweibo_access_token' in request.session.keys():
+		return [True, 'Eternal580']
+	return [False, get_qqweibo_client().get_authorize_url()]
+
 def view_meaningful_words(request):
 	contents = MeaningfulWordsHandler.read_raw_token_file()[0:10]
 	return render(request, 'yls_app/show_meaningful_words.html', {
 		'contents' : contents,
 		'which_side_bar_to_select': 1,
+		'qq_status': get_current_qq_status(request)
 	})
 
 def del_meaningful_word(request):
@@ -127,6 +135,7 @@ def view_topics(request):
 	# we split it to 3 columns
 	return render(request, 'yls_app/show_topics.html', {
 		'which_side_bar_to_select': 1,
+		'qq_status': get_current_qq_status(request),
 		'topics' : (result['topics'][0::3],result['topics'][1::3],result['topics'][2::3])
 		})
 
@@ -153,5 +162,11 @@ def get_tasks(request):
 			t_end = str(t.end_time).split('.')[0] + '.' + str(t.end_time).split('.')[1][0:2]
 			return_result.append([t_type, t_status, t_start, t_end, str(t.infomation)])
 	return HttpResponse(json.dumps(return_result), mimetype="application/json")
+
+def goods_home(request):
+	return render(request, 'yls_app/goods_home.html', {
+		'which_side_bar_to_select': 2,
+		'qq_status': get_current_qq_status(request),
+	})
 
 

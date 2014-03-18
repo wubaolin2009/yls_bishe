@@ -14,4 +14,5 @@ urlpatterns = patterns('',
     url(r'del_meaningful_word', views.del_meaningful_word, name="del_meaningful_word"),
     url(r'convert_to_final_dict', views.convert_to_final_dict, name="convert_to_final_dict"),
     url(r'get_tasks', views.get_tasks, name='get_tasks'),
+    url(r'goods_home', views.goods_home, name='goods_home'), # homepage of manipulating goods
 )

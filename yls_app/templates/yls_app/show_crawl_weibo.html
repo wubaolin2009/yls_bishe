@@ -9,15 +9,10 @@
       新建抓取任务 <br>
       当前状态:  {{status}} <br>
       {{content}}
-      {% if is_logged_in == False %}
-      <a id="add_weibo_button" class="btn btn-info" type="button">登录微博</a>
+      {% if qq_status.0 == False %}
+      <a class="btn btn-info" href='{{qq_status.1}}' class="btn btn-danger" type="button">请先登录qq微博</a>
       {% else %}
-        {% if is_fetching == False %}
-        <a class="btn btn-info" href='/yls_app/fetch_weibo' class="btn btn-success" type="button">抓取微博</a>
-        {% else %}
-        <br>
-        <a class="btn btn-danger" type="button">正在抓取</a>        
-        {% endif %}
+      <a class="btn btn-info" href='/yls_app/fetch_weibo' class="btn btn-success" type="button">抓取qq微博</a>
       {% endif %}
       <br>
       <a href='/yls_app/start_cut' class="btn btn-success" type="button">开始分词</a><br>
