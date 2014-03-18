@@ -99,7 +99,10 @@ def del_meaningful_word(request):
 	return HttpResponse(json.dumps(payload), mimetype="application/json")
 
 def start_cut(request):
-	raise Http404
+	in_foler = "yls_app/tools/contents/"
+	out_folder = "yls_app/tools/tokenized/"
+	LDAHandler.start_cut(in_foler, out_folder)
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
 def start_lda(request):
 	raise Http404
@@ -109,7 +112,7 @@ def view_topics(request):
 
 def convert_to_final_dict(request):
 	LDAHandler.convert_from_raw_tokenized()
-	return HttpResponseRedirect('yls_app/crawl_weibo')
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
 
 def get_tasks(request):
@@ -122,6 +125,8 @@ def get_tasks(request):
 	for i in task_type:		
 		task_lists = AjaxHandler.get_tasks(i)		
 		for t in task_lists:
+			if t.task_type != i:
+				continue
 			t_type = t.task_type.replace('TYPE_','')
 			t_status = t.task_status.replace('STATUS_', '')
 			t_start = str(t.start_time).split('.')[0] + '.' + str(t.start_time).split('.')[1][0:2]

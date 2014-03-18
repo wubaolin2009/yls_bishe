@@ -1,6 +1,80 @@
 # -*- coding: utf-8 -*-
 import os
 from yls_app.models import *
+from cut import *
+import thread
+import jieba
+
+# 用于分词
+class Cutter(object):
+    @staticmethod
+    def test_filter():
+        a = [u'兔纸', u'/', u'</', u'?', u'link']
+        f = FilterNoCharacter()
+        assert f.valid(a[0]) and f.valid(a[-1])
+        assert not (f.valid(a[1]) or f.valid(a[2]) or f.valid(a[3]))
+
+        a = [u'我们', u'不然', u'兔子']
+        f = FilterMeaningless(FILTER_TEST_FILE)
+        assert not f.valid(a[0])
+        assert not f.valid(a[1])
+        assert f.valid(a[2])
+
+    @staticmethod
+    def test():
+        test_filter()
+
+    @staticmethod
+    def cut(in_folder, out_folder):
+        t = Task.create_new_cut_task(in_folder, out_folder)
+        g_filter = FilterMeaningless(FILTER_TEST_FILE)
+        g_filter2 = FilterNoCharacter()
+        t.status = Task.TASK_STATUS_STARTED
+        t.save()
+        count = 0
+        target = AjaxHandler.get_fetched_count()
+        try:
+            for a,b,f in os.walk(in_folder):
+                all_files = f                
+                for file_name in f:
+                    print 'processing' + file_name + " " + str(count)
+                    count += 1
+                    if os.path.exists(out_folder + file_name + '.tok'):
+                        continue
+                    if count % 100 == 0:
+                        t.infomation = "Cutted:" + str(count) + "/" + str(target)
+                        t.save()
+
+                    to_cut = []
+                    try:
+                        for line in open(root_dir + file_name, 'r').readlines():
+                            context = line.split('!!!@#')[0]
+                            context = EliminateURL.get_processed_text(context.decode('utf-8'))
+                            to_cut.append(context)
+                    except Exception,e:
+                        continue
+                    #to_cut = [u'来这里，一战成神！ �已开通腾讯首款3D动作团队竞技网游@SM 的首测资格']
+                    f = open(out_folder + file_name + '.tok', 'w')
+                    for m in to_cut:
+                        #print '=========', m
+                        seg_list = jieba.cut(m, cut_all=False)
+                        for m in seg_list:
+                            if g_filter.valid(m) and g_filter2.valid(m):
+                                #print m
+                                f.write((m + u'\r\n').encode('utf-8'))
+                    f.close()
+        except Exception,e:
+            t.infomation = "Exception:" + e.message
+            Task.finish_task(t, False)
+            return
+        t.infomation = "Successful: Cutted " + str(count) + " files"
+        Task.finish_task(t, True)
+
+    @staticmethod
+    def start_cut(in_folder, out_folder):
+        ''' start the thread of cutting '''
+        thread.start_new(Cutter.cut, (in_folder, out_folder))
+
 # 主要用于得到当前一些job的状态
 class AjaxHandler(object):
 	# 得到某个文件有多少行
@@ -68,6 +142,11 @@ class LDAHandler(object):
 	RAW_TOKEN_FILE_NAME = MeaningfulWordsHandler.MEANINGFUL_WORDS_FILE
 	PROCESSED_TOKEN_FILE_NAME = RAW_TOKEN_FILE_NAME + '_converted'
 	LDA_TOOLS_PATH = 'yls_app/tools/run_lda.py'
+
+	@staticmethod
+	def start_cut(in_folder, out_folder):
+		return Cutter.start_cut(in_folder, out_folder)
+		#return Cutter.cut(in_folder, out_folder)
 
 	@staticmethod
 	def convert_token_format(in_file_name, out_file_name, ):

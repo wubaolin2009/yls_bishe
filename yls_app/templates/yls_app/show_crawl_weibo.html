@@ -80,6 +80,7 @@ function append_tr(max_line, max_col, data, table_name, tr_name)
 {
   var count = 0;
   for (var task in data) {
+    console.log(task);
     count += 1;
     var str_to_append = "<tr name = '"+tr_name+"'>";
     for(var value in data[task]) {

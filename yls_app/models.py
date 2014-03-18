@@ -35,15 +35,30 @@ class Task(models.Model):
 		return str(datetime.datetime.today())
 
 	@staticmethod
-	def create_new_convert_token_task(from_file, to):
-		t = Task()
-		t.task_type = Task.TYPE_CONVERT_RAW_TOKEN
-		t.task_status = Task.TASK_STATUS_NOT_START
-		t.infomation = "from:" + from_file + ' to:' + to + ' '
+	def fill_raw(t):
 		t.start_time = Task.get_date_time()
 		t.end_time = t.start_time
+		t.task_status = Task.TASK_STATUS_NOT_START
+		return t
+
+	@staticmethod
+	def create_new_convert_token_task(from_file, to):
+		t = Task()
+		t = Task.fill_raw(t)
+		t.task_type = Task.TYPE_CONVERT_RAW_TOKEN		
+		t.infomation = "from:" + from_file + ' to:' + to + ' '
 		t.save()
 		return t
+
+	@staticmethod
+	def create_new_cut_task(in_foler, out_folder):
+		t = Task()
+		t = Task.fill_raw(t)
+		t.task_type = Task.TYPE_CUT
+		t.infomation = "No results available"
+		t.save()
+		return t
+
 
 	@staticmethod
 	def finish_task(t, success=False):
