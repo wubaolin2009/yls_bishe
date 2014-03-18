@@ -47,7 +47,7 @@ class Cutter(object):
 
                     to_cut = []
                     try:
-                        for line in open(root_dir + file_name, 'r').readlines():
+                        for line in open(in_folder + file_name, 'r').readlines():
                             context = line.split('!!!@#')[0]
                             context = EliminateURL.get_processed_text(context.decode('utf-8'))
                             to_cut.append(context)
