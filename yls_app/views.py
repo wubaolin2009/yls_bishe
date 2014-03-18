@@ -105,7 +105,16 @@ def start_cut(request):
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
 def start_lda(request):
-	raise Http404
+	tokenized_folder = "yls_app/tools/tokenized/"
+	meaningful_words_raw = "yls_app/tools/wbl_80"
+	condition, msg = LDAHandler.can_lda_start(tokenized_folder, meaningful_words_raw)
+	if condition == False:
+		return render(request, 'yls_app/show_message.html', {
+		'message' : msg,
+		})
+	LDAHandler.start_lda(tokenized_folder,meaningful_words_raw)
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
+
 
 def view_topics(request):
 	raise Http404

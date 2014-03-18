@@ -4,6 +4,7 @@ from yls_app.models import *
 from cut import *
 import thread
 import jieba
+from run_lda import LDARunner
 
 # 用于分词
 class Cutter(object):
@@ -43,6 +44,7 @@ class Cutter(object):
                         continue
                     if count % 100 == 0:
                         t.infomation = "Cutted:" + str(count) + "/" + str(target)
+                        t.status = Task.TASK_STATUS_STARTED
                         t.save()
 
                     to_cut = []
@@ -184,12 +186,19 @@ class LDAHandler(object):
 		LDAHandler.convert_token_format(LDAHandler.RAW_TOKEN_FILE_NAME, LDAHandler.PROCESSED_TOKEN_FILE_NAME)
 
 	@staticmethod
-	def can_lda_start():
-		pass
+	def can_lda_start(tokenized_folder, raw_processed_words_path):
+		if AjaxHandler.get_tokenized_count() == 0:
+			return (False, "没有分词过！")
+		if not os.path.exists(raw_processed_words_path):
+			return (False, "没有提取过有意义的词")
+		if not os.path.exists(raw_processed_words_path + "_converted"):
+			return (False, "没有去掉有意义单词的词频field")
+		return True, "可以进行LDA"
 
 	@staticmethod
-	def start_lda():
-		pass
+	def start_lda(tokenized_folder,meaningful_words_raw_path):
+		meaningful_words_path = meaningful_words_raw + "_converted"
+		LDARunner.run_lda(tokenized_folder, meaningful_words_path)
 
 	@staticmethod
 	def view_result():

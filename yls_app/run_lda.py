@@ -2,7 +2,6 @@
 OUT_TOKENIZED_FOLDER = "/home/willw/bishe_weibo_tengxun/tokenized/"
 VOCAB_FILE = "/home/willw/bishe_weibo_tengxun/wbl_80_converted"
 
-
 import os
 import cPickle, string, numpy, getopt, sys, random, time, re, pprint
 import onlineldavb
@@ -16,16 +15,8 @@ def calc_file_counts(path):
             files.append(path + w)
     return count, files
 
-file_counts, g_all_files = calc_file_counts(OUT_TOKENIZED_FOLDER)
-
-# The number of documents to analyze each iteration
-batchsize = 500
-# The total number of documents in Wikipedia
-D = file_counts
-# The number of topics
-K = 150
-# Gamma iteration times 
-GAMMA_ITER_TIMES = 1000
+file_counts = 0
+g_all_files = []
 
 def get_article(start,count):
     end = start + count
@@ -62,43 +53,62 @@ def read_vocab(file_name):
 
 #test_get_file_contents()
 
-def main():
-    """
-    Downloads and analyzes a bunch of random Wikipedia articles using
-    online VB for LDA.
-    """
-    global batchsize, D, K    
 
-    # How many documents to look at
-    documentstoanalyze = int(D/batchsize) + 1
+class LDARunner(object):
+    def multi_thread(func):
+        return func
+    # The number of documents to analyze each iteration
+    # batchsize = 500
+    # The total number of documents in Wikipedia
+    # D = file_counts
+    # The number of topics
+    # K = 150
+    # Gamma iteration times 
+    # GAMMA_ITER_TIMES = 1000
+    @staticmethod
+    @multi_thread
+    def run_lda(tokenized_folder, meaningful_words_path, batchsize=500, K=150, GAMMA_ITER_TIMES=1):
+        global file_counts, g_all_files
+        file_counts, g_all_files = calc_file_counts(tokenized_folder)
+        D = file_counts
 
-    # Our vocabulary, we didn't use vocabulary.
-    vocab = read_vocab(VOCAB_FILE)    
+        # Remove the formmer results
+        # TODO: save it in dababases
+        os.popen("rm yls_app/tools/lambda*")
+        os.popen("rm yls_app/tools/gamma*")
+        # How many documents to look at
+        documentstoanalyze = int(D/batchsize) + 1
 
-    # Initialize the algorithm with alpha=1/K, eta=1/K, tau_0=1024, kappa=0.7
-    olda = onlineldavb.OnlineLDA(vocab, K, D, 1./K, 1./K, 1024., 0.7, GAMMA_ITER_TIMES)
-    # Run until we've seen all documents.
-    for iteration in range(documentstoanalyze):
-        # Download some articles
-        docset = get_article(iteration * batchsize, batchsize)
-        # Give them to online LDA
-        (gamma, bound) = olda.update_lambda(docset)
-        # Compute an estimate of held-out perplexity
-        (wordids, wordcts) = onlineldavb.parse_doc_list(docset, olda._vocab)
-        perwordbound = bound * len(docset) / (D * sum(map(sum, wordcts)))
-        print '%d:  rho_t = %f,  held-out perplexity estimate = %f' % \
-            (iteration, olda._rhot, numpy.exp(-perwordbound))
+        # Our vocabulary, we didn't use vocabulary.
+        vocab = read_vocab(meaningful_words_path)    
 
-        # Save lambda, the parameters to the variational distributions
-        # over topics, and gamma, the parameters to the variational
-        # distributions over topic weights for the articles analyzed in
-        # the last iteration.
-        if (iteration % 10 == 0):
-            numpy.savetxt('lambda-%d.dat' % iteration, olda._lambda)
-            numpy.savetxt('gamma-%d.dat' % iteration, gamma)
+        # Initialize the algorithm with alpha=1/K, eta=1/K, tau_0=1024, kappa=0.7
+        olda = onlineldavb.OnlineLDA(vocab, K, D, 1./K, 1./K, 1024., 0.7, GAMMA_ITER_TIMES)
+        # Run until we've seen all documents.
+        for iteration in range(documentstoanalyze):
+            # Download some articles
+            docset = get_article(iteration * batchsize, batchsize)
+            # Give them to online LDA
+            (gamma, bound) = olda.update_lambda(docset)
+            # Compute an estimate of held-out perplexity
+            (wordids, wordcts) = onlineldavb.parse_doc_list(docset, olda._vocab)
+            perwordbound = bound * len(docset) / (D * sum(map(sum, wordcts)))
+            print '%d:  rho_t = %f,  held-out perplexity estimate = %f' % \
+                (iteration, olda._rhot, numpy.exp(-perwordbound))
 
-def print_result(labmda_file_name):
-    vocab = read_vocab(VOCAB_FILE)
+            # Save lambda, the parameters to the variational distributions
+            # over topics, and gamma, the parameters to the variational
+            # distributions over topic weights for the articles analyzed in
+            # the last iteration.
+            #if (iteration % 10 == 0):
+                #numpy.savetxt('lambda-%d.dat' % iteration, olda._lambda)
+                #numpy.savetxt('gamma-%d.dat' % iteration, gamma)
+                #
+            numpy.savetxt('lambda.dat', olda._lambda)
+            numpy.savetxt('gamma.dat', gamma)
+        
+def print_result(labmda_file_name, vocab_file):
+    vocab = read_vocab(vocab_file)
     testlambda = numpy.loadtxt(labmda_file_name)
 
     for k in range(0, len(testlambda)):
