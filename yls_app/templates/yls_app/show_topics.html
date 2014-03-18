@@ -1,0 +1,38 @@
+{% extends "yls_app/base.html" %}
+
+{% block title %} 话题结果 {% endblock %}
+
+{% block content %}
+
+<div class="row">
+{% for one_topic_cluster in topics %}
+ <div class="col-md-4">
+ 	{% for one_topic in one_topic_cluster %}
+	<div class="panel panel-primary">
+	  <!-- Default panel contents -->
+	  <div class="panel-heading">话题{{one_topic.0.0}}
+	  </div>
+	  <!-- Table -->
+	  <table class="table" border="1" id="table_tasks">
+	  	{% for word_pair in one_topic %}
+	    <tr>            
+	      <th>{{word_pair.1}}</th>
+	      <th>{{word_pair.2}}</th>     
+	    </tr>
+	    {% endfor %}
+	  </table>
+	</div>
+	<br><br>
+	{% endfor %}
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block footer %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+</script>
+{% endblock %}
+

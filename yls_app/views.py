@@ -117,7 +117,15 @@ def start_lda(request):
 
 
 def view_topics(request):
-	raise Http404
+	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted', 2, 8)
+	if result['success'] == 0:
+		return render(request, 'yls_app/show_message.html', {
+		'message' : result['message'],
+		})
+	# we split it to 3 columns
+	return render(request, 'yls_app/show_topics.html', {
+		'topics' : (result['topics'][0::3],result['topics'][1::3],result['topics'][2::3])
+		})
 
 def convert_to_final_dict(request):
 	LDAHandler.convert_from_raw_tokenized()

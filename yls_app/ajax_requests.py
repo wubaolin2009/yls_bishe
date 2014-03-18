@@ -197,13 +197,10 @@ class LDAHandler(object):
 
 	@staticmethod
 	def start_lda(tokenized_folder,meaningful_words_raw_path):
-		meaningful_words_path = meaningful_words_raw + "_converted"
-		LDARunner.run_lda(tokenized_folder, meaningful_words_path)
+		meaningful_words_path = meaningful_words_raw_path + "_converted"
+		LDARunner.start_run_lda(tokenized_folder, meaningful_words_path)
 
 	@staticmethod
-	def view_result():
-		''' return {
-			'topic1' : [('abc', 0.01), ...],
-			'topic2' : [('cdd', 0.165), ...] } '''
-		pass
+	def view_result(vocab_file, topic_numbers, word_in_topic):
+		return LDARunner.get_result(vocab_file, topic_numbers, word_in_topic)
 	

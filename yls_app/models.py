@@ -51,6 +51,15 @@ class Task(models.Model):
 		return t
 
 	@staticmethod
+	def create_new_lda_task():
+		t = Task()
+		t = Task.fill_raw(t)
+		t. task_type = Task.TYPE_RUNLDA
+		t.infomation = "Started!"
+		t.save()
+		return t
+
+	@staticmethod
 	def create_new_cut_task(in_foler, out_folder):
 		t = Task()
 		t = Task.fill_raw(t)
