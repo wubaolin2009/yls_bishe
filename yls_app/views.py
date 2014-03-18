@@ -14,7 +14,7 @@ from yls_app.ajax_requests import LDAHandler
 # Create your views here.
 
 def index(request):
-	context = {'latest_poll_list': [7777,321]}
+	context = {'which_side_bar_to_select': 0}
 	return render(request, 'yls_app/index.html', context)
     # raise Http404
     # poll = get_object_or_404(Poll, pk=poll_id)
@@ -58,6 +58,7 @@ def show_crawl_weibo(request):
 	tasks_lists = [ AjaxHandler.get_tasks(t) for t in tasks]	
 
 	render_dict = {
+				'which_side_bar_to_select': 1, # tengxun weibo selected
 				'is_fetching':False,
 				'status':status,
 				'is_logged_in': status == u'已登录',
@@ -86,6 +87,7 @@ def view_meaningful_words(request):
 	contents = MeaningfulWordsHandler.read_raw_token_file()[0:10]
 	return render(request, 'yls_app/show_meaningful_words.html', {
 		'contents' : contents,
+		'which_side_bar_to_select': 1,
 	})
 
 def del_meaningful_word(request):
@@ -117,13 +119,14 @@ def start_lda(request):
 
 
 def view_topics(request):
-	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted', 2, 8)
+	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted', 5, 18)
 	if result['success'] == 0:
 		return render(request, 'yls_app/show_message.html', {
 		'message' : result['message'],
 		})
 	# we split it to 3 columns
 	return render(request, 'yls_app/show_topics.html', {
+		'which_side_bar_to_select': 1,
 		'topics' : (result['topics'][0::3],result['topics'][1::3],result['topics'][2::3])
 		})
 

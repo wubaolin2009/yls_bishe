@@ -58,7 +58,7 @@ def read_vocab(file_name):
 
 class LDARunner(object):
     @staticmethod
-    def start_run_lda(tokenized_folder, meaningful_words_path, batchsize=500, K=150, GAMMA_ITER_TIMES=1):
+    def start_run_lda(tokenized_folder, meaningful_words_path, batchsize=128, K=100, GAMMA_ITER_TIMES=500):
         thread.start_new_thread(LDARunner.run_lda, (tokenized_folder, meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES))
 
     LAMBDA_FILE = 'lambda.dat'
@@ -153,6 +153,9 @@ class LDARunner(object):
         if topic_numbers > len(testlambda):
             topic_numbers = len(testlambda)
 
+        # randomly choose one type of panel
+        panel_types = ('panel-primary','panel-success','panel-info','panel-warning','panel-danger')
+
         for k in range(0, topic_numbers):
             this_topic = []
             lambdak = list(testlambda[k, :])
@@ -161,8 +164,9 @@ class LDARunner(object):
             temp = sorted(temp, key = lambda x: x[0], reverse=True)
             print 'topic %d:' % (k)
             # feel free to change the "53" here to whatever fits your screen nicely.
+            topic_color = panel_types[random.randint(0,len(panel_types)-1)]
             for i in range(0, word_in_topic):
-                this_topic.append([k, vocab[temp[i][1]], "%.4f"%temp[i][0]])
+                this_topic.append([k, vocab[temp[i][1]], "%.4f"%temp[i][0], topic_color]) # add color
             ret['topics'].append(this_topic)
 
         return ret

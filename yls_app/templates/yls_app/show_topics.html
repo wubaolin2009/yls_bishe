@@ -8,12 +8,12 @@
 {% for one_topic_cluster in topics %}
  <div class="col-md-4">
  	{% for one_topic in one_topic_cluster %}
-	<div class="panel panel-primary">
+	<div class="panel panel-primary {{one_topic.0.3}}">
 	  <!-- Default panel contents -->
 	  <div class="panel-heading">话题{{one_topic.0.0}}
 	  </div>
 	  <!-- Table -->
-	  <table class="table" border="1" id="table_tasks">
+	  <table class="table" border="2" id="table_tasks">
 	  	{% for word_pair in one_topic %}
 	    <tr>            
 	      <th>{{word_pair.1}}</th>

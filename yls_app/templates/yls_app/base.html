@@ -23,9 +23,9 @@
     <div class="container">
       <div class="header">
         <ul class="nav nav-pills pull-right">
-          <li class="active"><a href="#">Home</a></li>
-          <li><a href="/yls_app/crawl_weibo">抓取腾讯微博</a></li>
-          <li><a href="#">微博处理</a></li>
+          <li name="topbar_0"><a href="/yls_app">Home</a></li>
+          <li name="topbar_1"><a href="/yls_app/crawl_weibo">腾讯微博</a></li>
+          <li name="topbar_2"><a href="#">电商相关</a></li>
         </ul>
         <h3 class="text-muted">杨柳杉的毕设</h3>
       </div>
@@ -49,3 +49,9 @@
     {% endblock %}
   </body>
 </html>
+<script>
+// handle top bar select
+$(document).ready(function(event){
+  $("li[name='topbar_{{which_side_bar_to_select}}']").addClass('active');
+});
+</script>
