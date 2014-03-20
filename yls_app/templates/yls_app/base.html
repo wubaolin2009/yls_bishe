@@ -26,13 +26,11 @@
           <li name="topbar_0"><a href="/yls_app">Home</a></li>
           <li name="topbar_1"><a href="/yls_app/crawl_weibo">腾讯微博</a></li>
           <li name="topbar_2"><a href="/yls_app/goods_home">电商相关</a></li>
-          <li>
-            {% if qq_status.0 == True %}
-            欢迎, {{qq_status.1}}
-            {% else %}
-            <a  class="btn btn-success" href='{{qq_status.1}}' type="button">登录qq微博</a>
-            {% endif %}
-          </li>
+          {% if qq_status.0 == True %}
+            <li> <a href="#">欢迎, {{qq_status.1}} </a></li>
+          {% else %}
+            <li> <a  class="btn btn-success" href='{{qq_status.1}}' type="button">登录qq微博</a> </li>
+          {% endif %}
         </ul>
         <h3 class="text-muted">杨柳杉的毕设</h3>        
       </div>

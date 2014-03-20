@@ -9,6 +9,7 @@ from ajax_requests import MeaningfulWordsHandler
 import json
 from yls_app.models import *
 from yls_app.ajax_requests import LDAHandler
+from qqweibo_sdk import QQWeiboUtils
 
 
 # Create your views here.
@@ -24,7 +25,7 @@ def index(request):
 # TODO: save the sdk to db and use alternative client ids
 def get_qqweibo_client():
 	#return qqweibo_sdk.Client.get_client('801486696', 'c45b2b1afb0eae1e64466f7c9fd36319', redirect_uri='http://10.19.225.80:12333/yls_app/get_qq_token')
-	return qqweibo_sdk.Client('801486696', 'c45b2b1afb0eae1e64466f7c9fd36319', redirect_uri='http://10.19.225.80:12333/yls_app/get_qq_token')
+	return qqweibo_sdk.Client('801486706', 'ccb88ca0bd2d2ab59465abf45818567e', redirect_uri='http://117.121.26.136:12333/yls_app/get_qq_token')
 
 def show_crawl_weibo(request):
 	''' involves 3 phrase
@@ -46,6 +47,8 @@ def show_crawl_weibo(request):
 			del request.session['qqweibo_code']
 			return HttpResponseRedirect('/yls_app/crawl_weibo') 
 		request.session['qqweibo_access_token'] = access_token
+		QQWeiboUtils.set_current_client(client)
+		request.session['user_nick'] = QQWeiboUtils.get_current_userinfo()
 		status = u'已登录'
 	elif 'qqweibo_code' not in request.session.keys():
 		# Do Nothing
@@ -87,7 +90,7 @@ def fetch_weibo(request):
 # [is_logined_in, login_name if logged else logged_in url]
 def get_current_qq_status(request):
 	if 'qqweibo_access_token' in request.session.keys():
-		return [True, 'Eternal580']
+		return [True, request.session['user_nick']]
 	return [False, get_qqweibo_client().get_authorize_url()]
 
 def view_meaningful_words(request):

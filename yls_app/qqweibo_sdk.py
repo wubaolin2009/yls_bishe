@@ -105,3 +105,17 @@ class _CallApi(object):
 
     def __str__(self):
         return '_Callable object<%s>' % self._name
+
+# intergrate some QQ weibo common functions in this class 
+class QQWeiboUtils(object):
+    client = None
+    @staticmethod
+    def set_current_client(client):
+        QQWeiboUtils.client = client
+
+    @staticmethod
+    def get_current_userinfo():
+        user_info = QQWeiboUtils.client.user.info.get(format='json')
+        # current we only return the user_name
+        return user_info['data']['nick']
+        
