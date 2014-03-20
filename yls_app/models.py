@@ -1,6 +1,32 @@
 from django.db import models
 import datetime
 
+class WeiboUser(models.Model):
+	''' Represent a user in QQWeibo '''
+	name = models.CharField(max_length=30, primary_key = True)
+	nick = models.CharField(max_length=30)
+	head = models.CharField(max_length=100, null=True, blank=True)
+	sex = models.IntegerField() # 1 male, 2 female, 0 not typed in
+	country_code = models.CharField(max_length=5, null=True, blank=True)
+	province_code = models.CharField(max_length=5, null=True, blank=True)
+	city_code = models.CharField(max_length=5, null=True, blank=True)
+	fansnum = models.IntegerField()
+	idolnum = models.IntegerField()
+
+class UserIdolList(models.Model):
+	name = models.ForeignKey(WeiboUser, related_name="user_idol_list")
+	idol_name = models.ForeignKey(WeiboUser, related_name="user_idol_name")
+
+class Tweet(models.Model):
+	tweet_id = models.IntegerField(primary_key=True)
+	text = models.CharField(max_length=300)
+	origtext = models.CharField(max_length=300)
+	count = models.CharField(max_length=10) # the number of being retweeted
+	mcount = models.CharField(max_length=10) # the number of being commented
+	image = models.CharField(max_length=100, null=True, blank=True) # the url of pictures
+	name = models.ForeignKey(WeiboUser, related_name="user_tweet")	
+
+
 class Task(models.Model):
 	TYPE_CUT="TYPE_CUT"
 	TYPE_RUNLDA="TYPE_RUNLDA"

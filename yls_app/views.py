@@ -24,38 +24,41 @@ def index(request):
 
 # TODO: save the sdk to db and use alternative client ids
 def get_qqweibo_client():
-	#return qqweibo_sdk.Client.get_client('801486696', 'c45b2b1afb0eae1e64466f7c9fd36319', redirect_uri='http://10.19.225.80:12333/yls_app/get_qq_token')
-	return qqweibo_sdk.Client('801486706', 'ccb88ca0bd2d2ab59465abf45818567e', redirect_uri='http://117.121.26.136:12333/yls_app/get_qq_token')
+	#return qqweibo_sdk.Client.get_client('801486706', 'ccb88ca0bd2d2ab59465abf45818567e', redirect_uri='http://117.121.26.136:12333/yls_app/get_qq_token')
+	return qqweibo_sdk.Client('801486704', 'f8a0cb0327d53a71aba609707c3ea239', redirect_uri='http://117.121.26.136:12333/yls_app/get_qq_token')
 
 def show_crawl_weibo(request):
 	''' involves 3 phrase
 		1. get url then redirect user to that.
 		2. get the code and set it to session[qq_code], then redirect it to show_crawl_weibo 2nd times
 		3. get the access_token '''
+	print '----------', request.session.keys()
 	
 	client = get_qqweibo_client()
 	status = u'没有登录'
-	if 'qqweibo_authorition_url' not in request.session.keys():
-		request.session['qqweibo_authorition_url'] = client.get_authorize_url()		
+	request.session['qqweibo_authorition_url'] = client.get_authorize_url()	
 	# redirected from 'get_qq_token'
-	elif 'qqweibo_code' in request.session.keys() and not 'qqweibo_access_token' in request.session.keys():
+	if 'qqweibo_code' in request.session.keys() and not 'qqweibo_access_token' in request.session.keys():
 		status = u'得到code'
 		try:
 			access_token = client.get_access_token_from_code(request.session['qqweibo_code'])
-		except Exception:
+		except Exception,e:
 			# retry
 			del request.session['qqweibo_code']
 			return HttpResponseRedirect('/yls_app/crawl_weibo') 
 		request.session['qqweibo_access_token'] = access_token
+		client.set_access_token(access_token)
 		QQWeiboUtils.set_current_client(client)
-		request.session['user_nick'] = QQWeiboUtils.get_current_userinfo()
+		request.session['user_nick'] = QQWeiboUtils.get_current_userinfo()['nick']
 		status = u'已登录'
 	elif 'qqweibo_code' not in request.session.keys():
 		# Do Nothing
 		url = client.get_authorize_url()
 		# return HttpResponseRedirect(url)
+		# assert False, request.session.keys()
 	else:
 		client.set_access_token(request.session['qqweibo_access_token'])
+		QQWeiboUtils.set_current_client(client)
 		status = u'已登录'
 
 	# Get the tasks status
@@ -81,15 +84,15 @@ def show_crawl_weibo(request):
 # This function can be eliminated and all url handles in craw_weibo
 def get_qq_token(request):
 	code = request.GET['code']
-	request.session['qqweibo_code'] = code
-	return HttpResponseRedirect('/yls_app/crawl_weibo')
+	request.session['qqweibo_code'] = code	
+	return show_crawl_weibo(request) #'/yls_app/crawl_weibo')
 
 def fetch_weibo(request):	
 	raise Http404
 
 # [is_logined_in, login_name if logged else logged_in url]
 def get_current_qq_status(request):
-	if 'qqweibo_access_token' in request.session.keys():
+	if 'qqweibo_access_token' in request.session.keys() :
 		return [True, request.session['user_nick']]
 	return [False, get_qqweibo_client().get_authorize_url()]
 
@@ -175,5 +178,9 @@ def goods_home(request):
 		'which_side_bar_to_select': 2,
 		'qq_status': get_current_qq_status(request),
 	})
+
+def fetch_relations(request):
+	QQWeiboUtils.start_fetch_users()
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
 

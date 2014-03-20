@@ -10,9 +10,10 @@
       当前状态:  {{status}} <br>
       {{content}}
       {% if qq_status.0 == False %}
-      <a class="btn btn-info" href='{{qq_status.1}}' class="btn btn-danger" type="button">请先登录qq微博</a>
+      <a href='{{qq_status.1}}' class="btn btn-danger" type="button">请先登录qq微博</a>
       {% else %}
-      <a class="btn btn-info" href='/yls_app/fetch_weibo' class="btn btn-success" type="button">抓取qq微博</a>
+      <a class="btn btn-primary" href='/yls_app/fetch_relations'" type="button">抓取收听关系</a>
+      <a href='/yls_app/fetch_weibo' class="btn btn-success" type="button">抓取qq微博</a>
       {% endif %}
       <br>
       <a href='/yls_app/start_cut' class="btn btn-success" type="button">开始分词</a><br>

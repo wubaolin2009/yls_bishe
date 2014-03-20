@@ -10,6 +10,8 @@ import json
 import urllib
 import urllib2
 import requests
+import Queue
+from yls_app.models import *
 
 class ClientError(Exception):
     pass
@@ -115,7 +117,79 @@ class QQWeiboUtils(object):
 
     @staticmethod
     def get_current_userinfo():
+        assert QQWeiboUtils.client
         user_info = QQWeiboUtils.client.user.info.get(format='json')
         # current we only return the user_name
-        return user_info['data']['nick']
+        return user_info['data']
+
+    @staticmethod
+    def get_user_model(a_user):
+        model_user = WeiboUser()
+        model_user.name = a_user['name']
+        model_user.nick = a_user['nick']
+        model_user.head = a_user['head']
+        model_user.sex = a_user['sex']
+        model_user.country_code = str(a_user['country_code'])
+        model_user.province_code = str(a_user['province_code'])
+        model_user.city_code = a_user['city_code']
+        model_user.fansnum = a_user['fansnum']
+        model_user.idolnum = a_user['idolnum']
+        return model_user
+
+    @staticmethod
+    def get_all_idollist_of(user_name, at_most = 300):
+        assert QQWeiboUtils.client
+        idollist = []
+        for i in range( (at_most + 29 )// 30 ):
+            try:
+                lists = QQWeiboUtils.client.friends.user_idollist.get(format='json',requnum=30, startindex=i * 30, name=user_name.name)
+                for a_user in lists['data']['info']:
+                    model_user = QQWeiboUtils.get_user_model(a_user)
+                    idollist.append(model_user)
+                if len(lists['data']['info']) < 30:
+                    break
+            except Exception, e:
+                print e
+                pass
+        
+        return idollist
+
+    @staticmethod
+    def get_all_tweets_of_user(username):
+        pass
+
+    @staticmethod
+    def start_fetch_users():
+        ''' start from the currently logged in user '''
+        my_name = QQWeiboUtils().get_current_userinfo()
+        my_name = QQWeiboUtils.get_user_model(my_name)
+        my_name.save()
+
+        q = Queue.Queue()
+        q.put(my_name)
+        while not q.empty():
+            user = q.get()
+            print 'processing user:', user.name
+            all_that = []
+            if not UserIdolList.objects.filter(name=user.name):
+                all_that = QQWeiboUtils.get_all_idollist_of(user)
+                print 'Got number of friends:' + str(len(all_that))
+                # first save all users
+                for one_friend in all_that:
+                    if not WeiboUser.objects.filter(name=one_friend.name):
+                        one_friend.save()
+                # Save all the relationships
+                for one_friend in all_that:
+                    if not (UserIdolList.objects.filter(name=user).filter(idol_name=one_friend.name)):
+                        l = UserIdolList()
+                        l.name = user
+                        l.idol_name = one_friend.name()
+                        l.save()
+            else:
+                print 'already exists!'
+            for m in all_that:
+                if not UserIdolList.objects.filter(name=m.name):
+                    q.put(m)
+
+        
         
