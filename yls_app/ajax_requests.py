@@ -103,6 +103,15 @@ class AjaxHandler(object):
 		task_lists = Task.objects.all().order_by('-start_time')
 		return task_lists
 
+	@staticmethod
+	def get_user_count():
+		return WeiboUser.objects.count()
+
+	@staticmethod
+	def get_relations_count():
+		return UserIdolList.objects.count()
+
+
 class MeaningfulWordsHandler(object):
 	# meaningful words file
 	MEANINGFUL_WORDS_FILE = 'yls_app/tools/wbl_80'

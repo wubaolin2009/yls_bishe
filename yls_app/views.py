@@ -185,4 +185,10 @@ def fetch_relations(request):
 	QQWeiboUtils.start_fetch_users(client, request.session['qqweibo_access_token'])
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
+def find_goods(request):
+	''' Ajax request '''
+	AjaxHandler.find_goods()
+	return return HttpResponse(json.dumps({'ret_code':0}), mimetype="application/json")
+
+
 

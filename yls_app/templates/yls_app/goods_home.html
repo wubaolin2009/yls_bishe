@@ -8,9 +8,10 @@
   <div class="col-md-3">
       可以进行的任务
       <br>
-      <a href='#' class="btn btn-success" type="button">发现商品</a><br>
-      <a href='/yls_app/view_meaningful_words' class="btn btn-danger" type="button">抓取商品描述</a><br>
-      <a href='/yls_app/convert_to_final_dict' class="btn btn-primary" type="button">抓取商品评论</a><br>
+      <a href='#' id="find_goods" class="btn btn-success" type="button">发现商品</a><br>
+      <!--a href='/yls_app/view_meaningful_words' class="btn btn-danger" type="button">抓取商品描述</a><br>-->
+      <!--a href='/yls_app/convert_to_final_dict' class="btn btn-primary" type="button">抓取商品评论</a><br>-->
+      <a href='/yls_app/convert_to_final_dict' class="btn btn-primary" type="button">商品分类</a><br>
       <a href='/yls_app/convert_to_final_dict' class="btn btn-warning" type="button">查看商品</a><br>
       <!--<a href='/yls_app/convert_to_final_dict' class="btn btn-info" type="button">分词</a><br>-->
       <!--<a href='/yls_app/convert_to_final_dict' class="btn btn-success" type="button">运行LDA</a><br>-->
@@ -32,4 +33,18 @@
   </div>
 </div>
 
+{% endblock %}
+{% block extra_js %}
+<script>
+$(document).ready(function(){
+  $('#find_goods').click(function(){
+    $.get("/yls_app/find_goods", {word:id},
+      function(data, textStatus) {
+        if(data['ret_code'] == 0) {
+          alert("开始查找上皮 ")
+        }
+        
+      }, "json" );
+  });
+});
 {% endblock %}
