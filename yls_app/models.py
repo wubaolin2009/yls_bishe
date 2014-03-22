@@ -100,3 +100,4 @@ class Task(models.Model):
 		t.end_time = Task.get_date_time()
 		t.task_status = Task.TASK_STATUS_SUCCESS if success else Task.TASK_STATUS_FAIL
 		t.save()
+

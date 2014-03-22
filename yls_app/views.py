@@ -32,7 +32,6 @@ def show_crawl_weibo(request):
 		1. get url then redirect user to that.
 		2. get the code and set it to session[qq_code], then redirect it to show_crawl_weibo 2nd times
 		3. get the access_token '''
-	print '----------', request.session.keys()
 	
 	client = get_qqweibo_client()
 	status = u'没有登录'
@@ -48,8 +47,8 @@ def show_crawl_weibo(request):
 			return HttpResponseRedirect('/yls_app/crawl_weibo') 
 		request.session['qqweibo_access_token'] = access_token
 		client.set_access_token(access_token)
-		QQWeiboUtils.set_current_client(client)
-		request.session['user_nick'] = QQWeiboUtils.get_current_userinfo()['nick']
+		#QQWeiboUtils.set_current_client(client)
+		request.session['user_nick'] = QQWeiboUtils.get_current_userinfo(client,access_token)['nick']
 		status = u'已登录'
 	elif 'qqweibo_code' not in request.session.keys():
 		# Do Nothing
@@ -58,7 +57,6 @@ def show_crawl_weibo(request):
 		# assert False, request.session.keys()
 	else:
 		client.set_access_token(request.session['qqweibo_access_token'])
-		QQWeiboUtils.set_current_client(client)
 		status = u'已登录'
 
 	# Get the tasks status
@@ -70,6 +68,8 @@ def show_crawl_weibo(request):
 				'qq_status': get_current_qq_status(request),
 				'is_fetching':False,
 				'status':status,
+				'got_user_count' : AjaxHandler.get_user_count(),
+				'got_relations_count' : AjaxHandler.get_relations_count(),
 				'fetched_count': AjaxHandler.get_fetched_count(),
 				'tokened_count': AjaxHandler.get_tokenized_count(),
 	}
@@ -180,7 +180,9 @@ def goods_home(request):
 	})
 
 def fetch_relations(request):
-	QQWeiboUtils.start_fetch_users()
+	assert 'qqweibo_access_token' in request.session.keys()
+	client = get_qqweibo_client()
+	QQWeiboUtils.start_fetch_users(client, request.session['qqweibo_access_token'])
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
 
