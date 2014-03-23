@@ -182,13 +182,15 @@ class QQWeiboUtils(object):
             #print '---------------', str(i), last_id, last_page_time
             try:       
                 contents = client.statuses.user_timeline.get(formate='json',pageflag=0 if i == 0 else 1, pagetime=last_page_time, reqnum=70, lastid=last_id, name=user_name, type=0, contenttype=0)
+                if contents['data'] == None:
+                    return all_weibos
                 hasnext = contents['data']['hasnext']
                 weibos = contents['data']['info']
                 if str(contents['ret']) != '0':
                     assert False, "Access Limited!"
                     return None
             except Exception,e:
-                print e
+                print e, contents
                 assert False, e
             if len(weibos) == 0:
                 break
