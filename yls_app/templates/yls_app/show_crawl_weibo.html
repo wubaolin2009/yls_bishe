@@ -113,6 +113,7 @@ $(document).ready(function(event){
         append_tr(max_entry, 4, data, 'table_tasks', 'task_');
       }, "json" );
     // get other datas
+    $('#weibo_count').html('获取中...');
     $.get("/yls_app/get_weibo_stats", {},
        function(data, textStatus) {
         $('#weibo_user_count').html(data['weibo_user_count']);

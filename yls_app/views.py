@@ -87,7 +87,6 @@ def fetch_weibo(request):
 	AjaxHandler.start_fetch_weibos(get_qqweibo_client(), request.session['qqweibo_access_token'])
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
-
 # [is_logined_in, login_name if logged else logged_in url]
 def get_current_qq_status(request):
 	if 'qqweibo_access_token' in request.session.keys() :
@@ -113,9 +112,9 @@ def del_meaningful_word(request):
 	return HttpResponse(json.dumps(payload), mimetype="application/json")
 
 def start_cut(request):
-	in_foler = "yls_app/tools/contents/"
-	out_folder = "yls_app/tools/tokenized/"
-	LDAHandler.start_cut(in_foler, out_folder)
+	#in_foler = "yls_app/tools/contents/"
+	#out_folder = "yls_app/tools/tokenized/"
+	LDAHandler.start_cut()
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
 def start_lda(request):

@@ -19,7 +19,7 @@ class Cutter(object):
         assert not (f.valid(a[1]) or f.valid(a[2]) or f.valid(a[3]))
 
         a = [u'我们', u'不然', u'兔子']
-        f = FilterMeaningless(FILTER_TEST_FILE)
+        f = FilterMeaningless()
         assert not f.valid(a[0])
         assert not f.valid(a[1])
         assert f.valid(a[2])
@@ -29,46 +29,47 @@ class Cutter(object):
         test_filter()
 
     @staticmethod
-    def cut(in_folder, out_folder):
-        t = Task.create_new_cut_task(in_folder, out_folder)
+    def cut():
+        t = Task.create_new_cut_task()
         g_filter = FilterMeaningless(FILTER_TEST_FILE)
         g_filter2 = FilterNoCharacter()
         t.status = Task.TASK_STATUS_STARTED
         t.save()
         count = 0
-        target = AjaxHandler.get_fetched_count()
+        target = AjaxHandler.get_weibos_count()
         try:
-            for a,b,f in os.walk(in_folder):
-                all_files = f                
-                for file_name in f:
-                    print 'processing' + file_name + " " + str(count)
-                    count += 1
-                    if os.path.exists(out_folder + file_name + '.tok'):
+            for weibo_user in WeiboUser.objects.all():
+                for weibo in Tweet.objects.filter(name=weibo_user):
+                    if len(TweetToken.objects.filter(tweet=weibo.tweet_id)) > 0:
                         continue
+                    print 'Processing ...', weibo.tweet_id
+                    count += 1
                     if count % 100 == 0:
-                        t.infomation = "Cutted:" + str(count) + "/" + str(target)
-                        t.status = Task.TASK_STATUS_STARTED
-                        t.save()
-
+                        the_task = Task.objects.filter(id=t.id)[0]
+                        the_task.infomation = "Cutted:" + str(count) + "/" + str(target)
+                        the_task.status = Task.TASK_STATUS_STARTED
+                        the_task.save()
                     to_cut = []
                     try:
-                        for line in open(in_folder + file_name, 'r').readlines():
-                            context = line.split('!!!@#')[0]
-                            context = EliminateURL.get_processed_text(context.decode('utf-8'))
-                            to_cut.append(context)
+                        context = EliminateURL.get_processed_text(weibo.text)
+                        to_cut.append(context)
                     except Exception,e:
+                        print e
                         continue
+                    print 'Token size', len(to_cut[0])
                     #to_cut = [u'来这里，一战成神！ �已开通腾讯首款3D动作团队竞技网游@SM 的首测资格']
-                    f = open(out_folder + file_name + '.tok', 'w')
+                    results = []
                     for m in to_cut:
-                        #print '=========', m
                         seg_list = jieba.cut(m, cut_all=False)
                         for m in seg_list:
                             if g_filter.valid(m) and g_filter2.valid(m):
-                                #print m
-                                f.write((m + u'\r\n').encode('utf-8'))
-                    f.close()
+                            	results.append(m)
+                    token  = TweetToken()
+                    token.tweet = weibo.tweet_id            
+                    token.tokens = ' '.join(results)
+                    token.save()
         except Exception,e:
+            print 'Exception',e
             t.infomation = "Exception:" + e.message
             Task.finish_task(t, False)
             return
@@ -76,9 +77,9 @@ class Cutter(object):
         Task.finish_task(t, True)
 
     @staticmethod
-    def start_cut(in_folder, out_folder):
+    def start_cut():
         ''' start the thread of cutting '''
-        thread.start_new(Cutter.cut, (in_folder, out_folder))
+        thread.start_new(Cutter.cut, ())
 
 # 主要用于得到当前一些job的状态
 class AjaxHandler(object):
@@ -88,17 +89,18 @@ class AjaxHandler(object):
 		return os.popen("wc -l " + file_path).read()
 
 	# 得到已经抓取了多少微博
-	@staticmethod
-	def get_fetched_count():
-		path = 'yls_app/tools/contents'
-		return os.popen('ls -l ' + path + '/ | wc -l').read()
+	#@staticmethod
+	#def get_fetched_count():
+	#	path = 'yls_app/tools/contents'
+	#	return os.popen('ls -l ' + path + '/ | wc -l').read()
 
 	# 得到tokenize了多少
 	@staticmethod
 	def get_tokenized_count():
-		path = 'yls_app/tools/tokenized'
+		#path = 'yls_app/tools/tokenized'
 		#assert False, os.getcwd() + path
-		return os.popen('ls -l ' + path + '/ | wc -l').read()
+		#return os.popen('ls -l ' + path + '/ | wc -l').read()
+		return TweetToken.objects.count()
 
 	# 得到某个类型任务的状态
 	@staticmethod
@@ -144,8 +146,8 @@ class AjaxHandler(object):
 
 	@staticmethod
 	def start_fetch_weibos(client, access_token):
-		thread.start_new(QQWeiboUtils.start_fetch_weibos, (client, access_token))
-		#return QQWeiboUtils.start_fetch_weibos(client, access_token)
+		#thread.start_new(QQWeiboUtils.start_fetch_weibos, (client, access_token))
+		return QQWeiboUtils.start_fetch_weibos(client, access_token)
 
 	@staticmethod
 	def get_user_count():
@@ -207,8 +209,8 @@ class LDAHandler(object):
 	LDA_TOOLS_PATH = 'yls_app/tools/run_lda.py'
 
 	@staticmethod
-	def start_cut(in_folder, out_folder):
-		return Cutter.start_cut(in_folder, out_folder)
+	def start_cut():
+		return Cutter.start_cut()
 		#return Cutter.cut(in_folder, out_folder)
 
 	@staticmethod

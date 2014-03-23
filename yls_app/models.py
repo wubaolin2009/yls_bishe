@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 import datetime
+import chardet
 
 class WeiboUser(models.Model):
 	''' Represent a user in QQWeibo '''
@@ -25,6 +27,27 @@ class Tweet(models.Model):
 	mcount = models.CharField(max_length=10) # the number of being commented
 	image = models.CharField(max_length=500, null=True, blank=True) # the url of pictures
 	name = models.ForeignKey(WeiboUser, related_name="user_tweet")	
+
+# tokenized_tweets
+class TweetToken(models.Model):
+	tweet = models.CharField(primary_key=True, max_length=100) # some error when treat it as FK...
+	tokens = models.CharField(max_length = 1500)
+
+# used by Jieba tokenizer
+class StopWords(models.Model):
+	word = models.CharField(max_length=30, primary_key=True)
+
+	@staticmethod
+	def init_from_file(file_path):
+		o = open(file_path, 'r')
+		for l in o.readlines():
+			l = l.decode('gbk').replace(u'\r\n','').replace(u'\n','')
+			s = StopWords()
+			s.word = l			
+			try:
+			    s.save()
+			except Exception,e:
+				continue
 
 
 class Task(models.Model):
@@ -88,7 +111,7 @@ class Task(models.Model):
 		return t
 
 	@staticmethod
-	def create_new_cut_task(in_foler, out_folder):
+	def create_new_cut_task():
 		t = Task()
 		t = Task.fill_raw(t)
 		t.task_type = Task.TYPE_CUT

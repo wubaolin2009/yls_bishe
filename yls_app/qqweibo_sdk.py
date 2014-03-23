@@ -249,9 +249,18 @@ class QQWeiboUtils(object):
                         break
     @staticmethod
     def start_fetch_weibos(client, access_token):
+        count = 0
         client.set_access_token(access_token)
         for user in WeiboUser.objects.all():
-            if len(Tweet.objects.filter(name=user.name)) > 0:
+            #print count, '----processing', user.name
+            count += 1
+            if count % 500 == 0:
+                print '----processing', count
+            try:
+                if len(Tweet.objects.filter(name=user.name)) > 0:
+                    continue
+            except Exception,e:
+                print e,'258'
                 continue
             all_weibos = QQWeiboUtils.get_all_tweets_of_user(client, user.name)
             # save them

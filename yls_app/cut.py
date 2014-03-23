@@ -5,16 +5,15 @@ from yls_app.models import *
 
 # constant variables
 FILTER_TEST_FILE = r'yls_app/tools/stop.txt'
-FILTER_FILE = FILTER_TEST_FILE
+#FILTER_FILE = FILTER_TEST_FILE
 
 # filter the meaningless token
 class FilterMeaningless(object):
-    def __init__(self, file_name):
-        a = open(file_name,'r')
+    def __init__(self):
         self.tokens = set()
-        for token in a.readlines():
+        for token in StopWords.objects.all():
             #print [token.decode('gbk')]
-            self.tokens.add(token.decode('gbk').replace('\r\n',''))
+            self.tokens.add(token.word)
 
     def valid(self, one_token):
         #print type(one_token)
