@@ -5,6 +5,7 @@ from cut import *
 import thread
 import jieba
 from run_lda import LDARunner
+from dangdang_utils import DangDang
 
 # 用于分词
 class Cutter(object):
@@ -104,12 +105,28 @@ class AjaxHandler(object):
 		return task_lists
 
 	@staticmethod
+	def get_relations():
+		ret = {}
+		for m in UserIdolList.objects.all():
+			me =  m.name.name
+			friend = m.idol_name
+			if me not in ret.keys():
+				ret[me] = [(friend.name, friend.nick, friend.head)]
+			else:
+				ret[me].append(friend.name, friend.nick, friend.head)
+		return ret
+
+	@staticmethod
 	def get_user_count():
 		return WeiboUser.objects.count()
 
 	@staticmethod
 	def get_relations_count():
 		return UserIdolList.objects.count()
+
+	@staticmethod
+	def get_goods_count():
+		return Goods.objects.count()
 
 
 class MeaningfulWordsHandler(object):
@@ -212,4 +229,7 @@ class LDAHandler(object):
 	@staticmethod
 	def view_result(vocab_file, topic_numbers, word_in_topic):
 		return LDARunner.get_result(vocab_file, topic_numbers, word_in_topic)
-	
+
+	@staticmethod
+	def find_goods():
+		DangDang.find_goods(DangDang.get_start_htmls[0])	

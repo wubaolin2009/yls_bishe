@@ -141,8 +141,8 @@ class QQWeiboUtils(object):
             try:
                 lists = client.friends.user_idollist.get(format='json',requnum=30, startindex=i * 30, name=user_name.name)
             except Exception, e:
-                print e
-                pass    
+                print 'WBL', e
+                continue    
             if str(lists['ret']) != '0':
                assert False, "Access Limited!"
                return None

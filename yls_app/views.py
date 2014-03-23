@@ -177,6 +177,7 @@ def goods_home(request):
 	return render(request, 'yls_app/goods_home.html', {
 		'which_side_bar_to_select': 2,
 		'qq_status': get_current_qq_status(request),
+		'goods_count':AjaxHandler.get_goods_count(),
 	})
 
 def fetch_relations(request):
@@ -188,7 +189,12 @@ def fetch_relations(request):
 def find_goods(request):
 	''' Ajax request '''
 	AjaxHandler.find_goods()
-	return return HttpResponse(json.dumps({'ret_code':0}), mimetype="application/json")
+	return HttpResponse(json.dumps({'ret_code':0}), mimetype="application/json")
+
+def show_relations(request):
+	# the data structure is 'somebody':[(friend_name, nick, head_url)]
+	relations = AjaxHandler.get_relations()
+	pass
 
 
 

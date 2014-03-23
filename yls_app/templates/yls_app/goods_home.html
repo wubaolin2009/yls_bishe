@@ -28,6 +28,11 @@
             <th>已完成</th>
             <th>目标</th>
           </tr>
+          <tr>
+            <th>抓取商品</th>
+            <th>{{goods_count}}个商品信息</th>
+            <th>----</th>
+          </tr>
         </table>
       </div>
   </div>
@@ -38,10 +43,13 @@
 <script>
 $(document).ready(function(){
   $('#find_goods').click(function(){
-    $.get("/yls_app/find_goods", {word:id},
+    $.get("/yls_app/find_goods", {},
       function(data, textStatus) {
         if(data['ret_code'] == 0) {
-          alert("开始查找上皮 ")
+          alert("开始查找商品");
+        }
+        else {
+          alert("请求失败！");
         }
         
       }, "json" );

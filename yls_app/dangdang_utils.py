@@ -1,4 +1,5 @@
-__author__ = 'willw'
+# -*- coding: utf-8 -*-
+__author__ = 'Sequoia Yang'
 
 import Queue
 import httplib,urllib
@@ -6,8 +7,6 @@ import re
 from sgmllib import SGMLParser
 import sgmllib
 import chardet
-
-start_html = "product.dangdang.com/1215287008.html"
 
 class URLLister(SGMLParser):
     def __init__(self, verbose = 0):
@@ -30,72 +29,93 @@ class URLLister(SGMLParser):
         if self.current_div_status > 0:
             self.name.append(text)
 
-def fetch_html(page):
-    # extract a valid address
-    host = page.split('/')[0]
-    url = '/'.join(page.split('/')[1:]) if len( page.split('/')) > 1 else ''
-    headers = {"Host": host,
-               "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1) Gecko/20090624 Firefox/3.5",
-                "Accept": "text/plain"}
+class DangDang(object):
+    @staticmethod
+    def get_start_htmls():
+        return ["product.dangdang.com/1215287008.html"]
 
-    http_client = httplib.HTTPConnection(host)
-    http_client.request('GET', '/' + url, headers=headers )
-    response = http_client.getresponse()
-    #print response.status, host + '/' + url
-    if response.status != 200:
-        response.read()
-        return None
-    s = response.read()
-    s = s.replace("\r\n"," ")
-    return s
+    @staticmethod
+    def fetch_html(page):
+        # extract a valid address
+        host = page.split('/')[0]
+        url = '/'.join(page.split('/')[1:]) if len( page.split('/')) > 1 else ''
+        headers = {"Host": host,
+                   "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1) Gecko/20090624 Firefox/3.5",
+                    "Accept": "text/plain"}
 
-def extract_title(html):
-    result = re.findall(r"<div class=\"head\" name=\"Title_.*?\">.*<h1>(.*?)<span class=", html, re.S)
-    return result[0].decode('GBK')
+        http_client = httplib.HTTPConnection(host)
+        http_client.request('GET', '/' + url, headers=headers )
+        response = http_client.getresponse()
+        #print response.status, host + '/' + url
+        if response.status != 200:
+            response.read()
+            return None
+        s = response.read()
+        s = s.replace("\r\n"," ")
+        return s
 
-def extract_detail(html):
-    #result = re.findall(r"<div class=\"detail-content\">((<div(.*?)</div>?)*?)</div>", html, re.S)
-    #return result[0].decode('GBK')
-    listener = URLLister()
-    listener.feed(html)
-    return listener.name
+    @staticmethod
+    def extract_title(html):
+        result = re.findall(r"<div class=\"head\" name=\"Title_.*?\">.*<h1>(.*?)<span class=", html, re.S)
+        return result[0].decode('GBK')
 
-# extract the cateloge from a given html
-def extract_category(html):
-    # Major Category
-    result = re.findall(r"target=\"_blank\" class=\"domain\" name=\"__Breadcrumb_.*?\"><b class=\"domain\">(.*)</b></a>", html, re.S)
-    # Minor Category
-    result = re.findall(r'target="_blank" name="__Breadcrumb_.*?">(.*?)</a>', html, re.S)
-    return [w.decode('GBK') for w in result]
+    @staticmethod
+    def extract_detail(html):
+        #result = re.findall(r"<div class=\"detail-content\">((<div(.*?)</div>?)*?)</div>", html, re.S)
+        #return result[0].decode('GBK')
+        listener = URLLister()
+        listener.feed(html)
+        return listener.name
 
-# get the links from the product page , pointing to another product
-def get_other_products(product_id):
-    html = fetch_html("product.dangdang.com/multreco.php?product_id=" + str(product_id) )
-    results = re.findall(r'product.dangdang.com.*?(\d+).html', html)
-    return ["product.dangdang.com/" + a + ".html" for a in list(set(results))]
+    # extract the cateloge from a given html
+    @staticmethod
+    def extract_category(html):
+        # Major Category
+        result = re.findall(r"target=\"_blank\" class=\"domain\" name=\"__Breadcrumb_.*?\"><b class=\"domain\">(.*)</b></a>", html, re.S)
+        # Minor Category
+        result = re.findall(r'target="_blank" name="__Breadcrumb_.*?">(.*?)</a>', html, re.S)
+        return u'--'.join([w.decode('GBK') for w in result])
 
-# general scheme
-def run(start, search_level = 3):
-    html = fetch_html(start)
-    category = extract_category(html)
-    price = extract_price(html)
-    desc = extract_desc(html)
-    # BFS
-    product_id = start.split('/')[-1].split('.')[0]
-    for next_html in get_other_products(product_id):
-        run(next_html)
+    # get the links from the product page , pointing to another product
+    @staticmethod
+    def get_other_products(product_id):
+        html = DangDang.fetch_html("product.dangdang.com/multreco.php?product_id=" + str(product_id) )
+        results = re.findall(r'product.dangdang.com.*?(\d+).html', html)
+        return ["product.dangdang.com/" + a + ".html" for a in list(set(results))]
 
+    # general scheme
+    @staticmethod
+    def find_goods(start, the_level = 1, search_level = 3):
+        if the_level > search_level:
+            return
+        html = DangDang.fetch_html(start)
+        category = DangDang.extract_category(html)
+        title = DangDang.extract_title(html)
+        # build the model of goods
+        goods = Goods()
+        goods.product_html = start
+        goods.product_name = title
+        goods.product_category = category
+        goods.save()
+        # BFS
+        product_id = start.split('/')[-1].split('.')[0]
+        other_products = get_other_products(product_id)
+        random.shuffle(other_products)
+        for next_html in other_products(product_id):
+            if len(Goods.objects.filter(product_html=next_html)) == 0:
+                find_goods(next_html, the_level=the_level + 1)
 
-html = fetch_html(start_html)
-print extract_title(html)
-for w in extract_category(html):
-    print w
-for w in extract_detail(html):
-    if chardet.detect(w)['encoding'] == 'GB2312':
-        print w.decode("gbk")
-
-
-
-
-
-
+    # convert all files that were fetched before into My SQL server
+    @staticmethod
+    def convert_to_mysql(start_folder):
+        for directory, dirnames, filenames in os.walk(start_folder):
+            for f in filenames:
+                print 'Processing:', f
+                o = open(start_folder + f, 'r')
+                html = o.read()
+                o.close()
+                good = Goods()
+                good.product_html = 'product.dangdang.com/' + f
+                good.product_name = DangDang.extract_title(html)
+                good.product_category = DangDang.extract_category(html)
+                good.save()

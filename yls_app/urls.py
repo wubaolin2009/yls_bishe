@@ -17,4 +17,5 @@ urlpatterns = patterns('',
     url(r'goods_home', views.goods_home, name='goods_home'), # homepage of manipulating goods
     url(r'fetch_relations', views.fetch_relations, name='fetch_relations'),
     url(r'find_goods', views.find_goods, name='find_goods'),
+    url(r'show_relations', views.show_relations, name='show_relations'),
 )

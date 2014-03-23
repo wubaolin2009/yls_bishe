@@ -101,3 +101,8 @@ class Task(models.Model):
 		t.task_status = Task.TASK_STATUS_SUCCESS if success else Task.TASK_STATUS_FAIL
 		t.save()
 
+# TO save the databases
+class Goods(models.Model):
+	product_html = models.CharField(primary_key=True, max_length=50)
+	product_name = models.CharField(max_length = 200)
+	product_category = models.CharField(max_length = 30)
