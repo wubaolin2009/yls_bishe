@@ -159,8 +159,50 @@ class QQWeiboUtils(object):
         return idollist
 
     @staticmethod
-    def get_all_tweets_of_user(client, access_token, username):
-        pass
+    def get_user_tweet(weibo):
+        model_tweet = Tweet()
+        model_tweet.tweet_id = weibo['id']
+        model_tweet.text = weibo['text']
+        model_tweet.origtext = weibo['origtext']
+        model_tweet.count = weibo['count']
+        model_tweet.mcount = weibo['mcount']
+        if type(weibo['image']) != list:
+            model_tweet.image = weibo['image']
+        else:
+            model_tweet.image = ','.join(weibo['image'])
+        model_tweet.name = WeiboUser.objects.filter(name=weibo['name'])[0]        
+        return model_tweet
+
+    @staticmethod
+    def get_all_tweets_of_user(client, user_name, at_most=280):
+        all_weibos = list()
+        last_id = 0
+        last_page_time = 0
+        for i in range( (at_most + 69)//70 ):
+            #print '---------------', str(i), last_id, last_page_time
+            try:       
+                contents = client.statuses.user_timeline.get(formate='json',pageflag=0 if i == 0 else 1, pagetime=last_page_time, reqnum=70, lastid=last_id, name=user_name, type=0, contenttype=0)
+                hasnext = contents['data']['hasnext']
+                weibos = contents['data']['info']
+                if str(contents['ret']) != '0':
+                    assert False, "Access Limited!"
+                    return None
+            except Exception,e:
+                print e
+                assert False, e
+            if len(weibos) == 0:
+                break
+            for m in weibos:
+                weibo = QQWeiboUtils.get_user_tweet(m)
+                all_weibos.append(weibo)
+
+            if hasnext == 0: #has other contents
+                last_id = weibos[-1]['id']
+                last_page_time = weibos[-1]['timestamp']
+            else:
+                break
+                    
+        return all_weibos
 
     @staticmethod
     def start_fetch_users(client, access_token):
@@ -203,6 +245,20 @@ class QQWeiboUtils(object):
                      if not UserIdolList.objects.filter(name=a_user.name) and len(a_user.name) > 0:
                         q.put(a_user)
                         break
+    @staticmethod
+    def start_fetch_weibos(client, access_token):
+        client.set_access_token(access_token)
+        for user in WeiboUser.objects.all():
+            if len(Tweet.objects.filter(name=user.name)) > 0:
+                continue
+            all_weibos = QQWeiboUtils.get_all_tweets_of_user(client, user.name)
+            # save them
+            for weibo in all_weibos:
+                try:
+                    weibo.save()
+                except Exception, e:
+                    print e, 'Save Failed!'
+
 
         
         

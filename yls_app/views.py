@@ -72,6 +72,7 @@ def show_crawl_weibo(request):
 				'got_relations_count' : AjaxHandler.get_relations_count(),
 				'fetched_count': AjaxHandler.get_fetched_count(),
 				'tokened_count': AjaxHandler.get_tokenized_count(),
+				'weibos_count' : AjaxHandler.get_weibos_count(),
 	}
 
 	#if status == u'已登录':
@@ -88,7 +89,7 @@ def get_qq_token(request):
 	return show_crawl_weibo(request) #'/yls_app/crawl_weibo')
 
 def fetch_weibo(request):	
-	raise Http404
+	AjaxHandler.start_fetch_weibos(get_qqweibo_client(), request.session['qqweibo_access_token'])
 
 # [is_logined_in, login_name if logged else logged_in url]
 def get_current_qq_status(request):

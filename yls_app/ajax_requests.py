@@ -6,6 +6,7 @@ import thread
 import jieba
 from run_lda import LDARunner
 from dangdang_utils import DangDang
+from qqweibo_sdk import *
 
 # 用于分词
 class Cutter(object):
@@ -117,6 +118,10 @@ class AjaxHandler(object):
 		return ret
 
 	@staticmethod
+	def start_fetch_weibos(client, access_token):
+		return QQWeiboUtils.start_fetch_weibos(client, access_token)
+
+	@staticmethod
 	def get_user_count():
 		return WeiboUser.objects.count()
 
@@ -127,6 +132,10 @@ class AjaxHandler(object):
 	@staticmethod
 	def get_goods_count():
 		return Goods.objects.count()
+
+	@staticmethod
+	def get_weibos_count():
+		return Tweet.objects.count()
 
 
 class MeaningfulWordsHandler(object):

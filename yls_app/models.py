@@ -18,12 +18,12 @@ class UserIdolList(models.Model):
 	idol_name = models.ForeignKey(WeiboUser, related_name="user_idol_name")
 
 class Tweet(models.Model):
-	tweet_id = models.IntegerField(primary_key=True)
-	text = models.CharField(max_length=300)
+	tweet_id = models.CharField(primary_key=True, max_length=100)
+	text = models.CharField(max_length=700)
 	origtext = models.CharField(max_length=300)
 	count = models.CharField(max_length=10) # the number of being retweeted
 	mcount = models.CharField(max_length=10) # the number of being commented
-	image = models.CharField(max_length=100, null=True, blank=True) # the url of pictures
+	image = models.CharField(max_length=500, null=True, blank=True) # the url of pictures
 	name = models.ForeignKey(WeiboUser, related_name="user_tweet")	
 
 
