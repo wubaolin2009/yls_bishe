@@ -12,7 +12,8 @@
       {% if qq_status.0 == False %}
       <a href='{{qq_status.1}}' class="btn btn-danger" type="button">请先登录qq微博</a>
       {% else %}
-      <a class="btn btn-primary" href='/yls_app/fetch_relations'" type="button">抓取收听关系</a>
+      <a class="btn btn-primary" href='/yls_app/fetch_relations' type="button">抓取收听关系</a>
+      <a class="btn btn-warning" href='/yls_app/show_relations' type='button'> 查看关系  </a>
       <a href='/yls_app/fetch_weibo' class="btn btn-success" type="button">抓取qq微博</a>
       {% endif %}
       <br>
@@ -24,11 +25,10 @@
       <a  class="btn btn-success" href='#' type="button">推荐商品</a>
   </div>
   <div class="col-md-9">
-      当前抓取用户数: {{got_user_count}} <br>
-      当前用户关系结果: {{got_relations_count}}  <br>
-      当前微博条数: {{weibos_count}} <br>
-      当前抓取结果: {{fetched_count}} 个文件被抓取 <br>
-      当前分词结果: {{tokened_count}} 个文件已经分词 <br>
+      当前抓取用户数: <a id="weibo_user_count">{{got_user_count}} </a> <br>
+      当前用户关系结果: <a id="weibo_rel_count">{{got_relations_count}}  </a><br>
+      当前微博条数: <a id="weibo_count">{{weibos_count}} </a><br>
+      当前分词结果: <a id="weibo_tokened">{{tokened_count}} 已经分词 </a><br>
       <div class="panel panel-primary">
         <!-- Default panel contents -->
         <div class="panel-heading">最近任务状态
@@ -112,6 +112,14 @@ $(document).ready(function(event){
        function(data, textStatus) {
         append_tr(max_entry, 4, data, 'table_tasks', 'task_');
       }, "json" );
+    // get other datas
+    $.get("/yls_app/get_weibo_stats", {},
+       function(data, textStatus) {
+        $('#weibo_user_count').html(data['weibo_user_count']);
+        $('#weibo_rel_count').html(data['weibo_rel_count']);
+        $('#weibo_count').html(data['weibo_count']);
+        $('#weibo_tokened').html(data['weibo_tokened']);
+      }, "json" );    
   });
 
   $('#view_all_task').click(function(event) {

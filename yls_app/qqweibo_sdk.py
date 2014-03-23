@@ -190,8 +190,8 @@ class QQWeiboUtils(object):
                     assert False, "Access Limited!"
                     return None
             except Exception,e:
-                print e, contents
-                assert False, e
+                print e
+                return all_weibos
             if len(weibos) == 0:
                 break
             for m in weibos:

@@ -7,6 +7,7 @@ import jieba
 from run_lda import LDARunner
 from dangdang_utils import DangDang
 from qqweibo_sdk import *
+import pydot
 
 # 用于分词
 class Cutter(object):
@@ -106,20 +107,45 @@ class AjaxHandler(object):
 		return task_lists
 
 	@staticmethod
-	def get_relations():
-		ret = {}
-		for m in UserIdolList.objects.all():
-			me =  m.name.name
-			friend = m.idol_name
-			if me not in ret.keys():
-				ret[me] = [(friend.name, friend.nick, friend.head)]
-			else:
-				ret[me].append(friend.name, friend.nick, friend.head)
-		return ret
+	def get_relations_image(N = 10):
+		'''the data structure is 'somebody':[(friend_name, nick, head_url)]
+		   At most Show N nodes'''
+		#ret = {}
+		#for m in UserIdolList.objects.all():
+		#	me =  m.name.name
+		#	friend = m.idol_name
+		#	if me not in ret.keys():
+		#		ret[me] = [(friend.name, friend.nick, friend.head)]
+		#	else:
+		#		ret[me].append([friend.name, friend.nick, friend.head])
+		# render them using pydot.
+		# too time consuming, since so much graphs
+		# We only render those edges both nodes in the Nodes set.
+		Nodes = set()
+		for i in WeiboUser.objects.all():
+			Nodes.add(i.name)
+			if len(Nodes) > N:
+				break
+		Edges = set()
+		for i in UserIdolList.objects.all():
+			if i.name.name in Nodes and i.idol_name.name in Nodes:
+				Edges.add((i.name.name, i.idol_name.name))
+		# Draw it
+		g = pydot.Dot('mygraph',g_type='dig')
+		for n in Nodes:
+			node = pydot.Node(n)
+			g.add_node(node) 
+		for e in Edges:
+			from_node, to_noe = e
+			g.add_edge(pydot.Edge(from_node,to_node))
+
+		g.write_jpg("/tmp/lala.jpg")
+		
 
 	@staticmethod
 	def start_fetch_weibos(client, access_token):
-		return QQWeiboUtils.start_fetch_weibos(client, access_token)
+		thread.start_new(QQWeiboUtils.start_fetch_weibos, (client, access_token))
+		#return QQWeiboUtils.start_fetch_weibos(client, access_token)
 
 	@staticmethod
 	def get_user_count():

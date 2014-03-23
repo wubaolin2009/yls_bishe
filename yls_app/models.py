@@ -31,10 +31,12 @@ class Task(models.Model):
 	TYPE_CUT="TYPE_CUT"
 	TYPE_RUNLDA="TYPE_RUNLDA"
 	TYPE_CONVERT_RAW_TOKEN="TYPE_CONVERT_RAW_TOKEN"
+	TYPE_GENERATE_RELATION_IMAGE="TYPE_GEN_RELATION_IMAGE"
 	TYPE_CHOICES = (
 		(TYPE_CUT, 'Cut the document to words'),
 		(TYPE_RUNLDA, 'Run LDA to find topics.'),
 		(TYPE_CONVERT_RAW_TOKEN, 'Convert to Raw data'),
+		(TYPE_GENERATE_RELATION_IMAGE, 'generate relation image'),
 	)
 	task_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
 
@@ -94,6 +96,13 @@ class Task(models.Model):
 		t.save()
 		return t
 
+	def create_new_image_task(in_foler, out_folder):
+		t = Task()
+		t = Task.fill_raw(t)
+		t.task_type = Task.TYPE_GENERATE_RELATION_IMAGE
+		t.infomation = "No results available"
+		t.save()
+		return t
 
 	@staticmethod
 	def finish_task(t, success=False):

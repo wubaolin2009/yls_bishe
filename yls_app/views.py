@@ -67,12 +67,7 @@ def show_crawl_weibo(request):
 				'which_side_bar_to_select': 1, # tengxun weibo selected
 				'qq_status': get_current_qq_status(request),
 				'is_fetching':False,
-				'status':status,
-				'got_user_count' : AjaxHandler.get_user_count(),
-				'got_relations_count' : AjaxHandler.get_relations_count(),
-				'fetched_count': AjaxHandler.get_fetched_count(),
-				'tokened_count': AjaxHandler.get_tokenized_count(),
-				'weibos_count' : AjaxHandler.get_weibos_count(),
+				'status':status,				
 	}
 
 	#if status == u'已登录':
@@ -90,6 +85,8 @@ def get_qq_token(request):
 
 def fetch_weibo(request):	
 	AjaxHandler.start_fetch_weibos(get_qqweibo_client(), request.session['qqweibo_access_token'])
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
+
 
 # [is_logined_in, login_name if logged else logged_in url]
 def get_current_qq_status(request):
@@ -193,9 +190,20 @@ def find_goods(request):
 	return HttpResponse(json.dumps({'ret_code':0}), mimetype="application/json")
 
 def show_relations(request):
-	# the data structure is 'somebody':[(friend_name, nick, head_url)]
-	relations = AjaxHandler.get_relations()
-	pass
+	relations_jpg = AjaxHandler.get_relations_image()
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
+
+def get_weibo_stats(request):
+	''' Ajax Request'''
+	data = {
+		'weibo_user_count':AjaxHandler.get_user_count(),
+		'weibo_rel_count':AjaxHandler.get_relations_count(),
+		'weibo_count':AjaxHandler.get_weibos_count(),
+		'weibo_tokened' :AjaxHandler.get_tokenized_count(),
+	}
+	return HttpResponse(json.dumps(data), mimetype="application/json")
+
+	
 
 
 

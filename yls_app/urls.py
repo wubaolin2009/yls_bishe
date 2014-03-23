@@ -18,4 +18,5 @@ urlpatterns = patterns('',
     url(r'fetch_relations', views.fetch_relations, name='fetch_relations'),
     url(r'find_goods', views.find_goods, name='find_goods'),
     url(r'show_relations', views.show_relations, name='show_relations'),
+    url(r'get_weibo_stats', views.get_weibo_stats, name='get_weibo_stats'),
 )
