@@ -7,7 +7,7 @@ import re
 from sgmllib import SGMLParser
 import sgmllib
 import chardet
-
+from yls_app.models import *
 class URLLister(SGMLParser):
     def __init__(self, verbose = 0):
         sgmllib.SGMLParser.__init__(self, verbose)
@@ -107,15 +107,24 @@ class DangDang(object):
 
     # convert all files that were fetched before into My SQL server
     @staticmethod
-    def convert_to_mysql(start_folder):
-        for directory, dirnames, filenames in os.walk(start_folder):
-            for f in filenames:
-                print 'Processing:', f
-                o = open(start_folder + f, 'r')
-                html = o.read()
-                o.close()
-                good = Goods()
-                good.product_html = 'product.dangdang.com/' + f
-                good.product_name = DangDang.extract_title(html)
-                good.product_category = DangDang.extract_category(html)
+    def convert_to_mysql(path_file):
+        o = open(path_file,'r')
+        for m in o.readlines():
+            m = m.decode('utf-8')
+            m = m.replace(u'\r\n',u'')
+            m = m.replace(u'\n',u'')
+            try:
+                id = m.split('@@!!')[0]
+                title = m.split('@@!!')[1].split('##$$')[0]
+                cat = m.split('@@!!')[1].split('##$$')[1]
+                print id
+            except Exception,e:
+                continue
+            good = Goods()
+            good.product_html = 'product.dangdang.com/' + id + '.html'
+            good.product_name = title
+            try:
+                good.product_category = cat
                 good.save()
+            except Exception,e:
+                print e

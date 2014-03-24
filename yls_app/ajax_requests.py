@@ -39,6 +39,7 @@ class Cutter(object):
         target = AjaxHandler.get_weibos_count()
         try:
             for weibo_user in WeiboUser.objects.all():
+            	final_results = []
                 for weibo in Tweet.objects.filter(name=weibo_user):
                     if len(TweetToken.objects.filter(tweet=weibo.tweet_id)) > 0:
                         continue
@@ -58,16 +59,15 @@ class Cutter(object):
                         continue
                     print 'Token size', len(to_cut[0])
                     #to_cut = [u'来这里，一战成神！ �已开通腾讯首款3D动作团队竞技网游@SM 的首测资格']
-                    results = []
                     for m in to_cut:
                         seg_list = jieba.cut(m, cut_all=False)
                         for m in seg_list:
                             if g_filter.valid(m) and g_filter2.valid(m):
-                            	results.append(m)
-                    token  = TweetToken()
-                    token.tweet = weibo.tweet_id            
-                    token.tokens = ' '.join(results)
-                    token.save()
+                            	final_results.append(m)
+                token  = TweetUserToken()
+                token.user_name = weibo_user.name         
+                token.tokens = ' '.join(final_results)
+                token.save()
         except Exception,e:
             print 'Exception',e
             t.infomation = "Exception:" + e.message

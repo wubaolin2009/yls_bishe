@@ -190,7 +190,7 @@ class QQWeiboUtils(object):
                     assert False, "Access Limited!"
                     return None
             except Exception,e:
-                print e
+                print e,'193'
                 return all_weibos
             if len(weibos) == 0:
                 break
@@ -257,7 +257,7 @@ class QQWeiboUtils(object):
             if count % 500 == 0:
                 print '----processing', count
             try:
-                if len(Tweet.objects.filter(name=user.name)) > 0:
+                if Tweet.objects.filter(name=user.name).exists():
                     continue
             except Exception,e:
                 print e,'258'

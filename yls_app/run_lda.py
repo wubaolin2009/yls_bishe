@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-OUT_TOKENIZED_FOLDER = "/home/willw/bishe_weibo_tengxun/tokenized/"
+#OUT_TOKENIZED_FOLDER = "/home/willw/bishe_weibo_tengxun/tokenized/"
 VOCAB_FILE = "/home/willw/bishe_weibo_tengxun/wbl_80_converted"
 
 import os
@@ -8,13 +8,11 @@ import onlineldavb
 import thread
 from yls_app.models import *
 
-def calc_file_counts(path):
+def calc_file_counts():
     files = []
-    count = 0
-    for a,b,f in os.walk(path):
-        for w in f:
-            count += 1
-            files.append(path + w)
+    count = TweetUserToken.objects.count()
+    for w in TweetUserToken.objects.all():
+        files.append(w.user.name)
     return count, files
 
 file_counts = 0
@@ -27,21 +25,15 @@ def get_article(start,count):
     file_lists = g_all_files[start:end]
     contents = []
     for file_name in file_lists:
-        f = open(file_name, 'r')
-        file_content = u""
-        for line in f.readlines():
-            line = line.decode('utf-8').replace(u'\r\n',u'')
-            if len(line) <= 1:
-                continue
-            file_content += ( line + u' ')
+        file_content = TweetUserToken.objects.filter(user_name=file_name)[0].tokens
         contents.append(file_content)
     return contents
 
 def test_get_file_contents():
-    assert len(get_article(OUT_TOKENIZED_FOLDER, 0, 64)) == 64
-    assert len(get_article(OUT_TOKENIZED_FOLDER, 64, 12)) == 12
-    assert len(get_article(OUT_TOKENIZED_FOLDER, 0, 1)) == 1
-    assert len(get_article(OUT_TOKENIZED_FOLDER, 0, 0)) == 0
+    assert len(get_article(0, 64)) == 64
+    assert len(get_article(64, 12)) == 12
+    assert len(get_article(0, 1)) == 1
+    assert len(get_article(0, 0)) == 0
 
 def read_vocab(file_name):
     vocab = []

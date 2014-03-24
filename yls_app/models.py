@@ -5,7 +5,7 @@ import chardet
 
 class WeiboUser(models.Model):
 	''' Represent a user in QQWeibo '''
-	name = models.CharField(max_length=30, primary_key = True)
+	name = models.CharField(max_length=30, primary_key = True, db_index=True)
 	nick = models.CharField(max_length=30)
 	head = models.CharField(max_length=100, null=True, blank=True)
 	sex = models.IntegerField() # 1 male, 2 female, 0 not typed in
@@ -20,7 +20,7 @@ class UserIdolList(models.Model):
 	idol_name = models.ForeignKey(WeiboUser, related_name="user_idol_name")
 
 class Tweet(models.Model):
-	tweet_id = models.CharField(primary_key=True, max_length=100)
+	tweet_id = models.CharField(primary_key=True, max_length=100, db_index=True)
 	text = models.CharField(max_length=700)
 	origtext = models.CharField(max_length=300)
 	count = models.CharField(max_length=10) # the number of being retweeted
@@ -29,9 +29,14 @@ class Tweet(models.Model):
 	name = models.ForeignKey(WeiboUser, related_name="user_tweet")	
 
 # tokenized_tweets
+# deprecated, now
 class TweetToken(models.Model):
-	tweet = models.CharField(primary_key=True, max_length=100) # some error when treat it as FK...
+	tweet = models.CharField(max_length=100, primary_key=True) # some error when treat it as FK...
 	tokens = models.CharField(max_length = 1500)
+
+class TweetUserToken(models.Model):
+	user_name = models.CharField(db_index=True, max_length = 30 )	
+	tokens = models.TextField()
 
 # used by Jieba tokenizer
 class StopWords(models.Model):
@@ -135,6 +140,6 @@ class Task(models.Model):
 
 # TO save the databases
 class Goods(models.Model):
-	product_html = models.CharField(primary_key=True, max_length=50)
-	product_name = models.CharField(max_length = 200)
+	product_html = models.CharField(primary_key=True, max_length=50, db_index=True)
+	product_name = models.CharField(max_length = 800)
 	product_category = models.CharField(max_length = 30)

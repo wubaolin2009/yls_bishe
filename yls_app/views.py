@@ -50,6 +50,7 @@ def show_crawl_weibo(request):
 		#QQWeiboUtils.set_current_client(client)
 		request.session['user_nick'] = QQWeiboUtils.get_current_userinfo(client,access_token)['nick']
 		status = u'已登录'
+		print request.session['qqweibo_access_token']
 	elif 'qqweibo_code' not in request.session.keys():
 		# Do Nothing
 		url = client.get_authorize_url()
@@ -57,7 +58,7 @@ def show_crawl_weibo(request):
 		# assert False, request.session.keys()
 	else:
 		client.set_access_token(request.session['qqweibo_access_token'])
-		status = u'已登录'
+		status = u'已登录'	
 
 	# Get the tasks status
 	tasks = [Task.TYPE_CUT, Task.TYPE_CONVERT_RAW_TOKEN, Task.TYPE_RUNLDA]
