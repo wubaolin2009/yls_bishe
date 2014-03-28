@@ -31,7 +31,7 @@ class Cutter(object):
     @staticmethod
     def cut():
         t = Task.create_new_cut_task()
-        g_filter = FilterMeaningless(FILTER_TEST_FILE)
+        g_filter = FilterMeaningless()
         g_filter2 = FilterNoCharacter()
         t.status = Task.TASK_STATUS_STARTED
         t.save()
@@ -39,12 +39,15 @@ class Cutter(object):
         target = AjaxHandler.get_weibos_count()
         try:
             for weibo_user in WeiboUser.objects.all():
+                count += 1
+                if TweetUserToken.objects.filter(user_name=weibo_user.name).exists():
+                    continue
+                if count % 100 == 0:
+                    print  count
             	final_results = []
                 for weibo in Tweet.objects.filter(name=weibo_user):
                     if len(TweetToken.objects.filter(tweet=weibo.tweet_id)) > 0:
                         continue
-                    print 'Processing ...', weibo.tweet_id
-                    count += 1
                     if count % 100 == 0:
                         the_task = Task.objects.filter(id=t.id)[0]
                         the_task.infomation = "Cutted:" + str(count) + "/" + str(target)
@@ -57,7 +60,6 @@ class Cutter(object):
                     except Exception,e:
                         print e
                         continue
-                    print 'Token size', len(to_cut[0])
                     #to_cut = [u'来这里，一战成神！ �已开通腾讯首款3D动作团队竞技网游@SM 的首测资格']
                     for m in to_cut:
                         seg_list = jieba.cut(m, cut_all=False)
@@ -100,7 +102,7 @@ class AjaxHandler(object):
 		#path = 'yls_app/tools/tokenized'
 		#assert False, os.getcwd() + path
 		#return os.popen('ls -l ' + path + '/ | wc -l').read()
-		return TweetToken.objects.count()
+		return TweetUserToken.objects.count()
 
 	# 得到某个类型任务的状态
 	@staticmethod
@@ -261,7 +263,7 @@ class LDAHandler(object):
 	@staticmethod
 	def start_lda(tokenized_folder,meaningful_words_raw_path):
 		meaningful_words_path = meaningful_words_raw_path + "_converted"
-		LDARunner.start_run_lda(tokenized_folder, meaningful_words_path)
+		LDARunner.start_run_lda(meaningful_words_path)
 
 	@staticmethod
 	def view_result(vocab_file, topic_numbers, word_in_topic):

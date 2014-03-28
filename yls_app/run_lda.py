@@ -9,11 +9,8 @@ import thread
 from yls_app.models import *
 
 def calc_file_counts():
-    files = []
     count = TweetUserToken.objects.count()
-    for w in TweetUserToken.objects.all():
-        files.append(w.user.name)
-    return count, files
+    return count
 
 file_counts = 0
 g_all_files = []
@@ -22,11 +19,10 @@ def get_article(start,count):
     end = start + count
     if end > file_counts:
         end = file_counts
-    file_lists = g_all_files[start:end]
+
     contents = []
-    for file_name in file_lists:
-        file_content = TweetUserToken.objects.filter(user_name=file_name)[0].tokens
-        contents.append(file_content)
+    for file_name in TweetUserToken.objects.all()[start:end]:
+        contents.append(file_name.tokens)
     return contents
 
 def test_get_file_contents():
@@ -38,6 +34,7 @@ def test_get_file_contents():
 def read_vocab(file_name):
     vocab = []
     f = open(file_name,'r').readlines()
+    print 'read vocab %s, %d'%(file_name, len(f))
     for line in f:
         decoded = line.decode('utf-8')
         decoded = decoded.replace(u'\r\n', u'')
@@ -50,11 +47,11 @@ def read_vocab(file_name):
 
 class LDARunner(object):
     @staticmethod
-    def start_run_lda(tokenized_folder, meaningful_words_path, batchsize=128, K=100, GAMMA_ITER_TIMES=500):
-        thread.start_new_thread(LDARunner.run_lda, (tokenized_folder, meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES))
+    def start_run_lda(meaningful_words_path, batchsize=128, K=100, GAMMA_ITER_TIMES=2):
+        thread.start_new_thread(LDARunner.run_lda, (meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES))
 
-    LAMBDA_FILE = 'lambda.dat'
-
+    LAMBDA_FILE = 'yls_app/tools/lambda.dat'
+    GAMMA_FILE = 'yls_app/tools/gamma.dat'
     # The number of documents to analyze each iteration
     # batchsize = 500
     # The total number of documents in Wikipedia
@@ -64,10 +61,10 @@ class LDARunner(object):
     # Gamma iteration times 
     # GAMMA_ITER_TIMES = 1000
     @staticmethod
-    def run_lda(tokenized_folder, meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES):
+    def run_lda(meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES):
         t = Task.create_new_lda_task()
         global file_counts, g_all_files
-        file_counts, g_all_files = calc_file_counts(tokenized_folder)
+        file_counts = calc_file_counts()
         D = file_counts
         t.status = Task.TASK_STATUS_STARTED
         t.save()
@@ -79,9 +76,9 @@ class LDARunner(object):
             os.popen("rm yls_app/tools/gamma*")
             # How many documents to look at
             documentstoanalyze = int(D/batchsize) + 1
-
+            print 'target iteration %d'%(documentstoanalyze)
             # Our vocabulary, we didn't use vocabulary.
-            vocab = read_vocab(meaningful_words_path)    
+            vocab = read_vocab(meaningful_words_path) 
 
             # Keep track of the last iteration
             last_iteration_perplexity = 0.0
@@ -90,6 +87,7 @@ class LDARunner(object):
             olda = onlineldavb.OnlineLDA(vocab, K, D, 1./K, 1./K, 1024., 0.7, GAMMA_ITER_TIMES)
             # Run until we've seen all documents.
             for iteration in range(documentstoanalyze):
+                print 'iteration ... %d'%iteration
                 # Download some articles
                 docset = get_article(iteration * batchsize, batchsize)
                 # Give them to online LDA
@@ -99,7 +97,6 @@ class LDARunner(object):
                 perwordbound = bound * len(docset) / (D * sum(map(sum, wordcts)))
                 t.infomation = '%d:  rho_t = %f,  held-out perplexity estimate = %f' % \
                     (iteration, olda._rhot, numpy.exp(-perwordbound))
-
                 last_iteration_perplexity = numpy.exp(-perwordbound)
 
                 t.status = Task.TASK_STATUS_STARTED
@@ -114,8 +111,9 @@ class LDARunner(object):
                     #numpy.savetxt('gamma-%d.dat' % iteration, gamma)
                     #
                 numpy.savetxt(LDARunner.LAMBDA_FILE, olda._lambda)
-                numpy.savetxt('gamma.dat', gamma)
+                numpy.savetxt(LDARunner.GAMMA_FILE, gamma)
         except Exception,e:
+            print e
             t.infomation = "Exception:" + e.message
             Task.finish_task(t, False)
         t.infomation = "Successful! Perplexity:" + str(last_iteration_perplexity)
