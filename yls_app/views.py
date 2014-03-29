@@ -10,7 +10,8 @@ import json
 from yls_app.models import *
 from yls_app.ajax_requests import LDAHandler
 from qqweibo_sdk import QQWeiboUtils
-
+from goods import *
+import HTMLParser
 
 # Create your views here.
 
@@ -203,7 +204,45 @@ def get_weibo_stats(request):
 	}
 	return HttpResponse(json.dumps(data), mimetype="application/json")
 
-	
+def view_goods_category(request):
+	all_cates = GoodsCategories.get_all_cates()
+	param = {
+		'categories': zip(range(0,len(all_cates)), all_cates),
+	}
+	return render(request, 'yls_app/view_goods_category.html', param)
 
-
-
+def view_goods_by_cate(request):
+	html_parser = HTMLParser.HTMLParser()
+	category = request.GET['category']
+	if 'page_num' in request.GET.keys():
+		page_num = request.GET['page_num']
+	else:
+		page_num = 1
+	ITEMS_PER_PAGE = 6
+	# table [ left, top, bottom, 'link' if left.type=link else '', 'link' if top.type=link else ''
+	# left, top, bottom 's type
+	column_descs = ['image', 'text', 'text']
+	table = []
+	all_counts = Goods.objects.all().count()
+	start_item = (int(page_num) - 1) * ITEMS_PER_PAGE
+	end_item = start_item + ITEMS_PER_PAGE
+	if end_item > all_counts:
+		end_item = all_counts
+	for product in Goods.objects.all()[start_item: end_item]:
+		product_html = product.product_html
+		product_name = html_parser.unescape(product.product_name)
+		product_cat = product.product_category
+		row = [product_html, product_name, product_cat]
+		row[0] = 'http://app.qlogo.cn/mbloghead/46d4846c30f8014de9d8/40'
+		row.append('')
+		row.append('')
+		table.append(row)
+	param = {
+		'goods_category':category,
+		'column_descs':column_descs,
+		'title':u'商品信息',
+		'table':table,
+		'page_start':page_num, # only useful for the first time
+		'page_count':all_counts//ITEMS_PER_PAGE + 1,
+	}
+	return render(request, 'yls_app/general_view.html',param)

@@ -1,0 +1,90 @@
+{% extends "yls_app/base.html" %}
+{% load staticfiles %}
+
+{% block title %} {{title}} {% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-success">
+      <div class="panel-heading">
+	<div class="col-md-4"> <h2> {{title}}</h2> </div>
+	<div class="col-md-8" id="page_it"></div>
+      <div class="panel-body" id="to_render">
+	<ul class="list-group">
+	  {% for line in table %}
+	  <li class="list-group-item list-group-item-success">
+	    <div class="media">
+	      <a class="pull-left" href="#">
+		{% if column_descs.0 == 'image' %}
+		<img width="64px" class="media-object" src="{{line.0}}" alt="图片">
+		{% endif %}
+		{% if column_descs.0 == 'text' %}
+		{{line.0}}
+		{% endif %}
+		{% if column_Descs.0 == 'link' %}
+		<a href="{{line.3}}">{{line.0}}</a>
+		{% endif %}
+	      </a>
+	      <div class="media-body">
+		{% if column_descs.1 == 'text' %}
+		<h4 class="media-heading">{{line.1}}</h4>
+		{% endif %}
+		{% if column_descs.1 == 'link' %}
+		<h4 class="media-heading"><a href="{{line.1}}">{{line.4}}</a></h4>
+		{% endif %}
+		{{line.2}}
+	      </div>
+	    </div>
+	  </li>
+	  {% endfor %}
+	</ul>
+      </div> <!-- end of body -->
+    </div> <!-- panel -->
+  </div> <!-- md-12 -->
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+var current_goods_category = "{{goods_category}}";
+function goto_page(page){
+  var url = "/yls_app/view_goods_by_cate";
+  $.get(url, {'category':current_goods_category, 'page_num':page},
+    function(data, textStatus) {
+      var result = $('#to_render',$(data)).html();
+      $('#to_render').html(result);
+    }, "html");
+};
+
+$(document).ready(function(event){
+  var options = {
+    bootstrapMajorVersion:"2",
+    currentPage:{{page_start}},
+    totalPages:{{page_count}},
+    size:"small",
+    alignment:"right",
+    useBootstrapTooltip:true,
+    onPageChanged: function(e, oldPage, newPage){
+        goto_page(newPage);
+    },
+    tooltipTitles: function (type, page, current) {
+        switch (type) {
+            case "first":
+                return "首页";
+            case "prev":
+                return "前一页";
+            case "next":
+                return "后一页";
+            case "last":
+                return "最后一页";
+            case "page":
+                return "第" + page + "页";
+            }
+        }
+  }
+  $('#page_it').bootstrapPaginator(options);
+});
+</script>
+{% endblock %}

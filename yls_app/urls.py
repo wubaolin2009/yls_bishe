@@ -1,3 +1,4 @@
+
 from django.conf.urls import patterns, url
 
 from yls_app import views
@@ -19,4 +20,6 @@ urlpatterns = patterns('',
     url(r'find_goods', views.find_goods, name='find_goods'),
     url(r'show_relations', views.show_relations, name='show_relations'),
     url(r'get_weibo_stats', views.get_weibo_stats, name='get_weibo_stats'),
+    url(r'view_goods_category', views.view_goods_category, name='view_goods_category'),
+    url(r'view_goods_by_cate', views.view_goods_by_cate, name='view_goods_by_cate'),
 )
