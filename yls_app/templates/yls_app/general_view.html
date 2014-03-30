@@ -33,7 +33,10 @@
 		{% if column_descs.1 == 'link' %}
 		<h4 class="media-heading"><a href="{{line.4}}">{{line.1}}</a></h4>
 		{% endif %}
+		<!-- We Allow HTML injected here -->
+		{% autoescape off %}
 		{{line.2}}
+		{% endautoescape %}
 	      </div>
 	    </div>
 	  </li>

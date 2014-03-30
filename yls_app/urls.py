@@ -22,4 +22,5 @@ urlpatterns = patterns('',
     url(r'get_weibo_stats', views.get_weibo_stats, name='get_weibo_stats'),
     url(r'view_goods_category', views.view_goods_category, name='view_goods_category'),
     url(r'view_goods_by_cate', views.view_goods_by_cate, name='view_goods_by_cate'),
+    url(r'view_weibouser', views.view_weibouser, name='view_weibouser'),
 )

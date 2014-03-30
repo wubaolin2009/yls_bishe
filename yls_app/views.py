@@ -204,56 +204,53 @@ def get_weibo_stats(request):
 	}
 	return HttpResponse(json.dumps(data), mimetype="application/json")
 
-def view_goods_category(request):
-	if 'page_num' in request.GET.keys():
-		page_num = request.GET['page_num']
-	else:
-		page_num = 1
-	ITEMS_PER_PAGE = 6
-	column_descs = ['image', 'link', 'text']
-	table = []
-	cates = GoodsCategories.get_all_cates()
-	all_counts = len(cates.keys())
-
+G_ITEMS_PER_PAGE = 6
+def get_start_end_item(page_num, all_counts, ITEMS_PER_PAGE=G_ITEMS_PER_PAGE):
 	start_item = (int(page_num) - 1) * ITEMS_PER_PAGE
 	end_item = start_item + ITEMS_PER_PAGE
 	if end_item > all_counts:
 		end_item = all_counts
+	return (start_item, end_item)
 
-	for cat in cates.keys()[start_item:end_item]:
-		image_url = cates[cat]['image']
-		title = cat
-		cat_counts = '共有' + str(cates[cat]['count']) + '种商品'
-		row = [image_url, title, cat_counts]
+def get_page_count(all_counts, ITEMS_PER_PAGE = G_ITEMS_PER_PAGE):
+	return all_counts//ITEMS_PER_PAGE + 1
+
+def view_goods_category(request):
+	page_num = request.GET['page_num'] if 'page_num' in request.GET.keys() else 1
+
+	column_descs = ['image', 'link', 'text']
+	table = []
+	cates = GoodsCategories.get_all_cates()
+	all_counts = len(cates)
+
+	start_item, end_item = get_start_end_item(page_num, all_counts)
+
+	for cat_count in cates[start_item:end_item]:
+		image_url = cat_count[1]['image']
+		title = cat_count[0]
+		counts_cat = '共有' + str(cat_count[1]['count']) + '种商品'
+		row = [image_url, title, counts_cat]
 		row.append('')
-		row.append('/yls_app/view_goods_by_cate?category='+cat)
+		row.append('/yls_app/view_goods_by_cate?category='+title)
 		table.append(row)
 	param = {
+		'which_side_bar_to_select': 2,
 		'column_descs':column_descs,
 		'title':u'商品类别',
 		'table':table,
-		'subtitle': '',
+		'subtitle': '按商品数排序',
 		'page_start':page_num, # only useful for the first time
-		'page_count':all_counts//ITEMS_PER_PAGE + 1,
+		'page_count':get_page_count(all_counts),
 		'page_url':'/yls_app/view_goods_category',
-		'param1_key':'',
-		'param1_value':'',
 	}
 	return render(request, 'yls_app/general_view.html',param)
-	#return render(request, 'yls_app/view_goods_category.html', param)
 
 def view_goods_by_cate(request):
 	html_parser = HTMLParser.HTMLParser()
 	category = request.GET['category']
-	if 'page_num' in request.GET.keys():
-		page_num = request.GET['page_num']
-	else:
-		page_num = 1
-	if 'subtitle' in request.GET.keys():
-		subtitle = request.GET['subtitle']
-	else:
-		subtitle = category
-	ITEMS_PER_PAGE = 6
+	page_num = request.GET['page_num'] if 'page_num' in request.GET.keys() else 1
+
+	subtitle = request.GET['subtitle'] if 'subtitle' in request.GET.keys() else category
 	# table [ left, top, bottom, 'link' if left.type=link else '', 'link' if top.type=link else ''
 	# left, top, bottom 's type
 	column_descs = ['image', 'link', 'text']
@@ -262,10 +259,8 @@ def view_goods_by_cate(request):
 		all_counts = Goods.objects.all().count()
 	else:
 		all_counts = Goods.objects.filter(product_category__startswith=category).count()
-	start_item = (int(page_num) - 1) * ITEMS_PER_PAGE
-	end_item = start_item + ITEMS_PER_PAGE
-	if end_item > all_counts:
-		end_item = all_counts
+	start_item, end_item = get_start_end_item(page_num, all_counts)
+
 	item_to_iterate = Goods.objects.filter(product_category__startswith=category)[start_item: end_item]
 	if category == 'all':
 		item_to_iterate = Goods.objects.all()[start_item:end_item]
@@ -279,14 +274,50 @@ def view_goods_by_cate(request):
 		row.append('http://'+product_html) # link to click top title
 		table.append(row)
 	param = {
+		'which_side_bar_to_select': 2,
 		'column_descs':column_descs,
 		'title':u'商品信息',
 		'table':table,
 		'subtitle': subtitle,
 		'page_start':page_num, # only useful for the first time
-		'page_count':all_counts//ITEMS_PER_PAGE + 1,
+		'page_count':get_page_count(all_counts),
 		'page_url':'/yls_app/view_goods_by_cate',
 		'param1_key':'category',
 		'param1_value':category,
+	}
+	return render(request, 'yls_app/general_view.html',param)
+
+def view_weibouser(request):
+	page_num = request.GET['page_num'] if 'page_num' in request.GET.keys() else 1
+
+	column_descs = ['image', 'link', 'text']
+	table = []
+	all_counts = WeiboUser.objects.all().count()
+	start_item, end_item = get_start_end_item(page_num, all_counts)
+
+	# get the latest tweet of a user
+	def get_latest_tweet(user):
+		if Tweet.objects.filter(name=user.name).exists():
+			return Tweet.objects.filter(name=user.name)[0].text
+		return '没有抓到微博'
+
+	for user in WeiboUser.objects.all()[start_item:end_item]:
+		image_url = user.head + '/40'
+		title = user.nick
+		last_weibo = get_latest_tweet(user)
+		last_weibo = HTMLParser.HTMLParser().unescape(last_weibo)
+		row = [image_url, title, last_weibo]
+		row.append('')
+		row.append('http://t.qq.com/'+user.name)
+		table.append(row)
+	param = {
+		'which_side_bar_to_select': 1,
+		'column_descs':column_descs,
+		'title':u'微博用户',
+		'table':table,
+		'subtitle': '显示数据库中最近微博',
+		'page_start':page_num,
+		'page_count': get_page_count(all_counts),
+		'page_url':'/yls_app/view_weibouser',
 	}
 	return render(request, 'yls_app/general_view.html',param)

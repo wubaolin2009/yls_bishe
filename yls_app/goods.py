@@ -20,7 +20,10 @@ class GoodsCategories(object):
                 ret_dict[product[0][0]]['count'] += 1
             else:
                 ret_dict[product[0][0]] = {'count':1, 'image':product[1]}
-        return ret_dict
+        convert_list = zip(ret_dict.keys(), ret_dict.values())
+        convert_list.sort(reverse=True, key=lambda x:x[1]['count'])
+        # print convert_list
+        return list(convert_list)
 
     @staticmethod
     def parse_one_category(str_category):
