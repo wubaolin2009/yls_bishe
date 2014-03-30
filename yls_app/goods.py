@@ -11,18 +11,16 @@ class GoodsCategories(object):
     def get_all_cates():
         to_ret = set()
         for product in Goods.objects.all().iterator():
-            to_ret.add(GoodsCategories.parse_one_category(product.product_category))
+            to_ret.add((GoodsCategories.parse_one_category(product.product_category), product.product_image_url))
         ret_dict = {}
         for product in to_ret:
-            if len(product[0]) == 0:
+            if len(product[0][0]) == 0:
                 continue
-            if product[0] in ret_dict.keys():
-                ret_dict[product[0]] += 1
+            if product[0][0] in ret_dict.keys():
+                ret_dict[product[0][0]]['count'] += 1
             else:
-                ret_dict[product[0]] = 1
-        to_sort = zip(ret_dict.keys(), ret_dict.values())
-        to_sort.sort(reverse=True, key=lambda x:x[1])
-        return to_sort
+                ret_dict[product[0][0]] = {'count':1, 'image':product[1]}
+        return ret_dict
 
     @staticmethod
     def parse_one_category(str_category):

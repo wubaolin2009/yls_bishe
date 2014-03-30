@@ -8,7 +8,7 @@
   <div class="col-md-12">
     <div class="panel panel-success">
       <div class="panel-heading">
-	<div class="col-md-4"> <h2> {{title}}</h2> </div>
+	<div class="col-md-4"> <h2> {{title}}</h2>{{subtitle}} </div>
 	<div class="col-md-8" id="page_it"></div>
       <div class="panel-body" id="to_render">
 	<ul class="list-group">
@@ -31,7 +31,7 @@
 		<h4 class="media-heading">{{line.1}}</h4>
 		{% endif %}
 		{% if column_descs.1 == 'link' %}
-		<h4 class="media-heading"><a href="{{line.1}}">{{line.4}}</a></h4>
+		<h4 class="media-heading"><a href="{{line.4}}">{{line.1}}</a></h4>
 		{% endif %}
 		{{line.2}}
 	      </div>
@@ -48,10 +48,10 @@
 
 {% block extra_js %}
 <script type="text/javascript">
-var current_goods_category = "{{goods_category}}";
 function goto_page(page){
-  var url = "/yls_app/view_goods_by_cate";
-  $.get(url, {'category':current_goods_category, 'page_num':page},
+  var url = '{{page_url}}';
+  $('#to_render').html('正在加载...');
+  $.get(url, { '{{param1_key}}':'{{param1_value}}', 'page_num':page},
     function(data, textStatus) {
       var result = $('#to_render',$(data)).html();
       $('#to_render').html(result);

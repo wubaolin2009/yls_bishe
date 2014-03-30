@@ -205,11 +205,42 @@ def get_weibo_stats(request):
 	return HttpResponse(json.dumps(data), mimetype="application/json")
 
 def view_goods_category(request):
-	all_cates = GoodsCategories.get_all_cates()
+	if 'page_num' in request.GET.keys():
+		page_num = request.GET['page_num']
+	else:
+		page_num = 1
+	ITEMS_PER_PAGE = 6
+	column_descs = ['image', 'link', 'text']
+	table = []
+	cates = GoodsCategories.get_all_cates()
+	all_counts = len(cates.keys())
+
+	start_item = (int(page_num) - 1) * ITEMS_PER_PAGE
+	end_item = start_item + ITEMS_PER_PAGE
+	if end_item > all_counts:
+		end_item = all_counts
+
+	for cat in cates.keys()[start_item:end_item]:
+		image_url = cates[cat]['image']
+		title = cat
+		cat_counts = '共有' + str(cates[cat]['count']) + '种商品'
+		row = [image_url, title, cat_counts]
+		row.append('')
+		row.append('/yls_app/view_goods_by_cate?category='+cat)
+		table.append(row)
 	param = {
-		'categories': zip(range(0,len(all_cates)), all_cates),
+		'column_descs':column_descs,
+		'title':u'商品类别',
+		'table':table,
+		'subtitle': '',
+		'page_start':page_num, # only useful for the first time
+		'page_count':all_counts//ITEMS_PER_PAGE + 1,
+		'page_url':'/yls_app/view_goods_category',
+		'param1_key':'',
+		'param1_value':'',
 	}
-	return render(request, 'yls_app/view_goods_category.html', param)
+	return render(request, 'yls_app/general_view.html',param)
+	#return render(request, 'yls_app/view_goods_category.html', param)
 
 def view_goods_by_cate(request):
 	html_parser = HTMLParser.HTMLParser()
@@ -218,31 +249,44 @@ def view_goods_by_cate(request):
 		page_num = request.GET['page_num']
 	else:
 		page_num = 1
+	if 'subtitle' in request.GET.keys():
+		subtitle = request.GET['subtitle']
+	else:
+		subtitle = category
 	ITEMS_PER_PAGE = 6
 	# table [ left, top, bottom, 'link' if left.type=link else '', 'link' if top.type=link else ''
 	# left, top, bottom 's type
-	column_descs = ['image', 'text', 'text']
+	column_descs = ['image', 'link', 'text']
 	table = []
-	all_counts = Goods.objects.all().count()
+	if category == 'all':
+		all_counts = Goods.objects.all().count()
+	else:
+		all_counts = Goods.objects.filter(product_category__startswith=category).count()
 	start_item = (int(page_num) - 1) * ITEMS_PER_PAGE
 	end_item = start_item + ITEMS_PER_PAGE
 	if end_item > all_counts:
 		end_item = all_counts
-	for product in Goods.objects.all()[start_item: end_item]:
+	item_to_iterate = Goods.objects.filter(product_category__startswith=category)[start_item: end_item]
+	if category == 'all':
+		item_to_iterate = Goods.objects.all()[start_item:end_item]
+	for product in item_to_iterate:
 		product_html = product.product_html
 		product_name = html_parser.unescape(product.product_name)
 		product_cat = product.product_category
 		row = [product_html, product_name, product_cat]
-		row[0] = 'http://app.qlogo.cn/mbloghead/46d4846c30f8014de9d8/40'
+		row[0] = product.product_image_url
 		row.append('')
-		row.append('')
+		row.append('http://'+product_html) # link to click top title
 		table.append(row)
 	param = {
-		'goods_category':category,
 		'column_descs':column_descs,
 		'title':u'商品信息',
 		'table':table,
+		'subtitle': subtitle,
 		'page_start':page_num, # only useful for the first time
 		'page_count':all_counts//ITEMS_PER_PAGE + 1,
+		'page_url':'/yls_app/view_goods_by_cate',
+		'param1_key':'category',
+		'param1_value':category,
 	}
 	return render(request, 'yls_app/general_view.html',param)
