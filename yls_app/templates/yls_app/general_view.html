@@ -8,7 +8,9 @@
   <div class="col-md-12">
     <div class="panel panel-success">
       <div class="panel-heading">
+	{% autoescape off %}
 	<div class="col-md-4"> <h2> {{title}}</h2>{{subtitle}} </div>
+	{% endautoescape %}
 	<div class="col-md-8" id="page_it"></div>
       <div class="panel-body" id="to_render">
 	<ul class="list-group">
@@ -27,14 +29,14 @@
 		{% endif %}
 	      </a>
 	      <div class="media-body">
+		<!-- We Allow HTML injected here -->
+		{% autoescape off %}
 		{% if column_descs.1 == 'text' %}
 		<h4 class="media-heading">{{line.1}}</h4>
 		{% endif %}
 		{% if column_descs.1 == 'link' %}
 		<h4 class="media-heading"><a href="{{line.4}}">{{line.1}}</a></h4>
 		{% endif %}
-		<!-- We Allow HTML injected here -->
-		{% autoescape off %}
 		{{line.2}}
 		{% endautoescape %}
 	      </div>
@@ -50,7 +52,34 @@
 {% endblock %}
 
 {% block extra_js %}
+
 <script type="text/javascript">
+function add_preview() {
+  $('a[id^=\'preview_img_\']').imgPreview({
+    containerID: 'imgPreviewWithStyles',
+    imgCSS: {
+        // Limit preview size:
+        height: 300
+    },
+    // When container is shown:
+    onShow: function(link){
+        // Animate link:
+        $(link).stop().animate({opacity:0.4});
+        // Reset image:
+        $('img', this).stop().css({opacity:0});
+    },
+    // When image has loaded:
+    onLoad: function(){
+        // Animate image
+        $(this).animate({opacity:1}, 300);
+    },
+    // When container hides: 
+    onHide: function(link){
+        // Animate link:
+        $(link).stop().animate({opacity:1});
+    }
+  });
+}
 function goto_page(page){
   var url = '{{page_url}}';
   $('#to_render').html('正在加载...');
@@ -58,6 +87,7 @@ function goto_page(page){
     function(data, textStatus) {
       var result = $('#to_render',$(data)).html();
       $('#to_render').html(result);
+      add_preview();
     }, "html");
 };
 
@@ -88,6 +118,11 @@ $(document).ready(function(event){
         }
   }
   $('#page_it').bootstrapPaginator(options);
+  add_preview();
 });
 </script>
+<script src={% static "yls_app/js/imgpreview.full.jquery.js" %}
+<script>
+</script>
+
 {% endblock %}

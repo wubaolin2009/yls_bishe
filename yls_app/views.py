@@ -287,6 +287,9 @@ def view_goods_by_cate(request):
 	}
 	return render(request, 'yls_app/general_view.html',param)
 
+def get_tweet_count(user_name):
+	return Tweet.objects.filter(name = user_name).count()
+
 def view_weibouser(request):
 	page_num = request.GET['page_num'] if 'page_num' in request.GET.keys() else 1
 
@@ -304,11 +307,14 @@ def view_weibouser(request):
 	for user in WeiboUser.objects.all()[start_item:end_item]:
 		image_url = user.head + '/40'
 		title = user.nick
+		title = HTMLParser.HTMLParser().unescape(title)
 		last_weibo = get_latest_tweet(user)
 		last_weibo = HTMLParser.HTMLParser().unescape(last_weibo)
+		last_weibo += u"<br>" +  u' <h6>抓到微博数: %d条</h6>'%(get_tweet_count(user.name))
 		row = [image_url, title, last_weibo]
 		row.append('')
-		row.append('http://t.qq.com/'+user.name)
+		#row.append('http://t.qq.com/'+user.name)
+		row.append('/yls_app/view_weibo_by_user?user_name='+user.name)
 		table.append(row)
 	param = {
 		'which_side_bar_to_select': 1,
@@ -319,5 +325,41 @@ def view_weibouser(request):
 		'page_start':page_num,
 		'page_count': get_page_count(all_counts),
 		'page_url':'/yls_app/view_weibouser',
+	}
+	return render(request, 'yls_app/general_view.html',param)
+
+def view_weibo_by_user(request):
+	page_num = request.GET['page_num'] if 'page_num' in request.GET.keys() else 1
+	user_name = request.GET['user_name']
+	user = WeiboUser.objects.filter(name=user_name)[0]
+	column_descs = ['image', 'text', 'text']
+	table = []
+	all_counts = get_tweet_count(user_name)
+	start_item, end_item = get_start_end_item(page_num, all_counts)
+
+	for tweet in Tweet.objects.filter(name=user_name)[start_item:end_item]:
+		image_url = user.head + '/40'
+		title = user.nick
+		weibo = tweet.text
+		if tweet.image and len(tweet.image) > 0:
+			weibo += u'<br><a id=\'%s\' href=\"%s\"><img width=\"80px\"  height=\"80px\" class=\"media-object\" src=\"%s\" alt=\"微博中的图片\"/></a>'%('preview_img_'+tweet.tweet_id, tweet.image+'/460.jpg', tweet.image+'/120')
+		#print tweet.image
+		weibo = HTMLParser.HTMLParser().unescape(weibo)
+		row = [image_url, title, weibo]
+		row.append('')
+		row.append('http://t.qq.com/'+user.name)
+		table.append(row)
+	user_weibo_url = 'http://t.qq.com/'+user.name;
+	param = {
+		'which_side_bar_to_select': 1,
+		'column_descs':column_descs,
+		'title':u'微博',
+		'table':table,
+		'subtitle': u'<a href="%s">%s</a>'%(user_weibo_url,  u'在腾讯微博中查看'),
+		'page_start':page_num,
+		'page_count': get_page_count(all_counts),
+		'page_url':'/yls_app/view_weibo_by_user',
+		'param1_key':'user_name',
+		'param1_value': user_name,
 	}
 	return render(request, 'yls_app/general_view.html',param)
