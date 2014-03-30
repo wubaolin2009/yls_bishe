@@ -143,3 +143,4 @@ class Goods(models.Model):
 	product_html = models.CharField(primary_key=True, max_length=50, db_index=True)
 	product_name = models.CharField(max_length = 800)
 	product_category = models.CharField(max_length = 30)
+	product_image_url = models.CharField(max_length = 100,null=True)

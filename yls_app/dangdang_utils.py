@@ -60,6 +60,11 @@ class DangDang(object):
         return result[0].decode('GBK')
 
     @staticmethod
+    def extract_image(html):
+        result = re.findall(r"<img id=\"largePic\".*?wsrc=\"(.*?)\"", html, re.S)
+        return result[0]
+
+    @staticmethod
     def extract_detail(html):
         #result = re.findall(r"<div class=\"detail-content\">((<div(.*?)</div>?)*?)</div>", html, re.S)
         #return result[0].decode('GBK')
@@ -128,3 +133,18 @@ class DangDang(object):
                 good.save()
             except Exception,e:
                 print e
+
+    # once after the database filled with convert_to_mysql, but not filled with the image url, so add the image urls to the database
+    @staticmethod
+    def add_dangdang_image():
+        for product in Goods.objects.all().iterator():
+            if not product.product_image_url or len(product.product_image_url) == 0:
+                print 'processing...', product.product_html
+                html = DangDang.fetch_html(product.product_html)
+                try:
+                    image_url = DangDang.extract_image(html)
+                    product.product_image_url = image_url
+                    product.save()
+                except Exception,e:
+                    print e
+                    raise e
