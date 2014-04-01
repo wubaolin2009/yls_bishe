@@ -262,7 +262,7 @@ class LDAHandler(object):
 
 	@staticmethod
 	def start_lda(tokenized_folder,meaningful_words_raw_path):
-		meaningful_words_path = meaningful_words_raw_path + "_converted"
+		meaningful_words_path = meaningful_words_raw_path + "_converted" + '_manual_processed';
 		LDARunner.start_run_lda(meaningful_words_path)
 
 	@staticmethod
