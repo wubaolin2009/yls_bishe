@@ -132,7 +132,7 @@ def start_lda(request):
 
 
 def view_topics(request):
-	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted', 5, 18)
+	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted_manual_processed', 10, 48)
 	if result['success'] == 0:
 		return render(request, 'yls_app/show_message.html', {
 		'message' : result['message'],

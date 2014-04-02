@@ -9,7 +9,8 @@ import thread
 from yls_app.models import *
 
 def calc_file_counts():
-    count = TweetUserToken.objects.count()
+#    count = TweetUserToken.objects.count()
+    count = TweetToken.objects.count()
     return count
 
 file_counts = 0
@@ -21,7 +22,8 @@ def get_article(start,count):
         end = file_counts
 
     contents = []
-    for file_name in TweetUserToken.objects.all()[start:end]:
+#    for file_name in TweetUserToken.objects.all()[start:end]:
+    for file_name in TweetToken.objects.all()[start:end]:
         contents.append(file_name.tokens)
     return contents
 
@@ -47,7 +49,7 @@ def read_vocab(file_name):
 
 class LDARunner(object):
     @staticmethod
-    def start_run_lda(meaningful_words_path, batchsize=128, K=100, GAMMA_ITER_TIMES=2):
+    def start_run_lda(meaningful_words_path, batchsize=512, K=100, GAMMA_ITER_TIMES=1):
         thread.start_new_thread(LDARunner.run_lda, (meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES))
 
     LAMBDA_FILE = 'yls_app/tools/lambda.dat'

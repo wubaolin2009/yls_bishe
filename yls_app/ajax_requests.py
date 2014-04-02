@@ -29,7 +29,48 @@ class Cutter(object):
         test_filter()
 
     @staticmethod
-    def cut():
+    def cut_no_group():
+        ''' not group all tokens to same user, instead treat them as it is from 
+        different users '''
+        g_filter = FilterMeaningless()
+        g_filter2 = FilterNoCharacter()
+        count = 0
+        print 'start cut_no_group......'
+        fake = range(0, 5100000, 1000)
+
+        for start in fake:
+            for weibo in Tweet.objects.all()[start:start+1000]:
+                #print 'processing weibo ', weibo.tweet_id
+                count += 1
+                if count % 1000 == 0:
+                    print 'Cutted', count, count / 51000.0
+
+                if TweetToken.objects.filter(tweet=weibo.tweet_id).exists():
+                    continue
+                try:
+                    context = EliminateURL.get_processed_text(weibo.text)
+                except Exception,e:
+                    print 'Exception in cut_no_group 1st',e
+                    continue
+                seg_list = jieba.cut(context, cut_all=False)
+                final_results = []
+                for m in seg_list:
+                    if g_filter.valid(m) and g_filter2.valid(m):
+                   	    final_results.append(m)
+                token  = TweetToken()
+                token.tweet = weibo.tweet_id
+                token.tokens = ' '.join(final_results)
+                token.save()
+#    except Exception,e:
+#           print 'Exception in cut_no_group 2nd',e
+#           return
+
+    @staticmethod
+    def cut(group_by_user=False):
+        ''' When group_by_user == True, it will group all the token belonging to
+        the same user to one entry to TweetUserToken, else TweetToken '''
+        if group_by_user == False:
+            return Cutter.cut_no_group()
         t = Task.create_new_cut_task()
         g_filter = FilterMeaningless()
         g_filter2 = FilterNoCharacter()
