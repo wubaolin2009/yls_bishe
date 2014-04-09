@@ -36,14 +36,15 @@ class Cutter(object):
         g_filter2 = FilterNoCharacter()
         count = 0
         print 'start cut_no_group......'
-        fake = range(0, 5100000, 1000)
+        fake = range(5295977, Tweet.objects.all().count(), 1000)
 
         for start in fake:
+            count = 0
             for weibo in Tweet.objects.all()[start:start+1000]:
                 #print 'processing weibo ', weibo.tweet_id
                 count += 1
-                if count % 1000 == 0:
-                    print 'Cutted', count, count / 51000.0
+                if (start + count) % 1000 == 0:
+                    print 'Cutted', start + count, (start+count) / 51000.0
 
                 if TweetToken.objects.filter(tweet=weibo.tweet_id).exists():
                     continue
@@ -208,6 +209,9 @@ class AjaxHandler(object):
 	def get_weibos_count():
 		return Tweet.objects.count()
 
+        @staticmethod
+        def clear_topic_result():
+            LDARunner.clear_topic_result()
 
 class MeaningfulWordsHandler(object):
 	# meaningful words file
@@ -304,12 +308,13 @@ class LDAHandler(object):
 	@staticmethod
 	def start_lda(tokenized_folder,meaningful_words_raw_path):
 		meaningful_words_path = meaningful_words_raw_path + "_converted" + '_manual_processed';
-		LDARunner.start_run_lda(meaningful_words_path)
+                LDARunner.start_run_lda(meaningful_words_path)
+ 
+        @staticmethod
+        def view_result(vocab_file, topic_numbers, word_in_topic):
+            return LDARunner.get_result(vocab_file, topic_numbers, word_in_topic)
+    
+        @staticmethod
+        def find_goods():
+            DangDang.find_goods(DangDang.get_start_htmls[0]) 
 
-	@staticmethod
-	def view_result(vocab_file, topic_numbers, word_in_topic):
-		return LDARunner.get_result(vocab_file, topic_numbers, word_in_topic)
-
-	@staticmethod
-	def find_goods():
-		DangDang.find_goods(DangDang.get_start_htmls[0])	

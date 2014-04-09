@@ -8,9 +8,14 @@ import onlineldavb
 import thread
 from yls_app.models import *
 
+# this option, when True, turned more verbose vocabulary
+verbose_vocabulary = True
 def calc_file_counts():
-#    count = TweetUserToken.objects.count()
-    count = TweetToken.objects.count()
+    global verbose_vocabulary
+    if verbose_vocabulary:
+        count = TweetToken.objects.count()
+    else:
+        count = TweetUserToken.objects.count()
     return count
 
 file_counts = 0
@@ -22,9 +27,13 @@ def get_article(start,count):
         end = file_counts
 
     contents = []
-#    for file_name in TweetUserToken.objects.all()[start:end]:
-    for file_name in TweetToken.objects.all()[start:end]:
-        contents.append(file_name.tokens)
+    global verbose_vocabulary
+    if verbose_vocabulary:
+        for file_name in TweetToken.objects.all()[start:end]:
+            contents.append(file_name.tokens)
+    else:
+        for file_name in TweetUserToken.objects.all()[start:end]:
+            contents.append(file_name.tokens)
     return contents
 
 def test_get_file_contents():
@@ -49,8 +58,9 @@ def read_vocab(file_name):
 
 class LDARunner(object):
     @staticmethod
-    def start_run_lda(meaningful_words_path, batchsize=512, K=100, GAMMA_ITER_TIMES=1):
-        thread.start_new_thread(LDARunner.run_lda, (meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES))
+    def start_run_lda(meaningful_words_path, batchsize=2900000, K=80, GAMMA_ITER_TIMES=400):
+#        thread.start_new_thread(LDARunner.run_lda, (meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES))
+        LDARunner.run_lda(meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES)
 
     LAMBDA_FILE = 'yls_app/tools/lambda.dat'
     GAMMA_FILE = 'yls_app/tools/gamma.dat'
@@ -103,6 +113,7 @@ class LDARunner(object):
 
                 t.status = Task.TASK_STATUS_STARTED
                 t.save()
+                print 'perplexity: %f'%(last_iteration_perplexity)
 
                 # Save lambda, the parameters to the variational distributions
                 # over topics, and gamma, the parameters to the variational
@@ -120,7 +131,12 @@ class LDARunner(object):
             Task.finish_task(t, False)
         t.infomation = "Successful! Perplexity:" + str(last_iteration_perplexity)
         Task.finish_task(t, True)
-     
+
+    @staticmethod
+    def clear_topic_result():
+        TopicWord.objects.all().delete()
+        Topic.objects.all().delete()
+
     @staticmethod   
     def get_result(vocab_file, topic_numbers, word_in_topic, labmda_file_name = LAMBDA_FILE):
         ''' return type:
@@ -133,6 +149,19 @@ class LDARunner(object):
         ret['success'] = 1
         ret['message'] = 'success'
         ret['topics'] = []
+        # randomly choose one type of panel
+        panel_types = ('panel-primary','panel-success','panel-info','panel-warning','panel-danger')
+        # save the new result?
+        save_new_result = (Topic.objects.all().count() == 0)
+        if not save_new_result:
+            for topic in Topic.objects.all():
+                this_topic = []
+                topic_color = panel_types[random.randint(0,len(panel_types)-1)]
+                for topic_word in TopicWord.objects.filter(topic=topic):
+                    this_topic.append([topic_word.topic.topic_id, topic_word.word, topic_word.freq, topic_color, topic.topic_name])
+                ret['topics'].append(this_topic)
+            return ret
+
         for i in [labmda_file_name, vocab_file]:
             if not os.path.exists(i):
                 ret['success'] =  0
@@ -145,9 +174,6 @@ class LDARunner(object):
         if topic_numbers > len(testlambda):
             topic_numbers = len(testlambda)
 
-        # randomly choose one type of panel
-        panel_types = ('panel-primary','panel-success','panel-info','panel-warning','panel-danger')
-
         for k in range(0, topic_numbers):
             this_topic = []
             lambdak = list(testlambda[k, :])
@@ -155,10 +181,13 @@ class LDARunner(object):
             temp = zip(lambdak, range(0, len(lambdak)))
             temp = sorted(temp, key = lambda x: x[0], reverse=True)
             print 'topic %d:' % (k)
+            t = Topic(topic_id=k, topic_name=u'未分类')
+            t.save()
             # feel free to change the "53" here to whatever fits your screen nicely.
             topic_color = panel_types[random.randint(0,len(panel_types)-1)]
             for i in range(0, word_in_topic):
-                this_topic.append([k, vocab[temp[i][1]], "%.4f"%temp[i][0], topic_color]) # add color
+                TopicWord(topic=t, word=vocab[temp[i][1]], freq = "%.10f"%temp[i][0]).save()
+                this_topic.append([k, vocab[temp[i][1]], "%.4f"%temp[i][0], topic_color, u'未分类']) # add color
             ret['topics'].append(this_topic)
 
         return ret

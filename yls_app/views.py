@@ -132,7 +132,7 @@ def start_lda(request):
 
 
 def view_topics(request):
-	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted_manual_processed', 10, 48)
+	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted_manual_processed', 60, 20)
 	if result['success'] == 0:
 		return render(request, 'yls_app/show_message.html', {
 		'message' : result['message'],
@@ -363,3 +363,7 @@ def view_weibo_by_user(request):
 		'param1_value': user_name,
 	}
 	return render(request, 'yls_app/general_view.html',param)
+
+def clear_topics(request):
+	relations_jpg = AjaxHandler.clear_topic_result()
+	return HttpResponseRedirect('/yls_app/crawl_weibo')

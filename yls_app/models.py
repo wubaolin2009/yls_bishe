@@ -144,3 +144,13 @@ class Goods(models.Model):
 	product_name = models.CharField(max_length = 800)
 	product_category = models.CharField(max_length = 30)
 	product_image_url = models.CharField(max_length = 100,null=True)
+
+# save the lda results
+class Topic(models.Model):
+        topic_id = models.IntegerField(primary_key=True)
+        topic_name = models.CharField(max_length=50,null=True)
+
+class TopicWord(models.Model):
+        topic = models.ForeignKey(Topic,related_name='topic_topic_word')
+        word = models.CharField(max_length=30)
+        freq = models.CharField(max_length=20)

@@ -24,4 +24,5 @@ urlpatterns = patterns('',
     url(r'view_goods_by_cate', views.view_goods_by_cate, name='view_goods_by_cate'),
     url(r'view_weibouser', views.view_weibouser, name='view_weibouser'),
     url(r'view_weibo_by_user', views.view_weibo_by_user, name='view_weibo_by_user'),
+    url(r'clear_topics', views.clear_topics, name='view_clear_topics'),
 )
