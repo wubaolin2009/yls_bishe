@@ -25,4 +25,5 @@ urlpatterns = patterns('',
     url(r'view_weibouser', views.view_weibouser, name='view_weibouser'),
     url(r'view_weibo_by_user', views.view_weibo_by_user, name='view_weibo_by_user'),
     url(r'clear_topics', views.clear_topics, name='view_clear_topics'),
+    url(r'run_at_lda', views.run_at_lda, name='run_at_lda'),
 )

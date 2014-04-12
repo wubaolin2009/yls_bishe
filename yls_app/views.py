@@ -12,6 +12,7 @@ from yls_app.ajax_requests import LDAHandler
 from qqweibo_sdk import QQWeiboUtils
 from goods import *
 import HTMLParser
+import at_lda
 
 # Create your views here.
 
@@ -130,6 +131,9 @@ def start_lda(request):
 	LDAHandler.start_lda(tokenized_folder,meaningful_words_raw)
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
+def run_at_lda(request):
+	at_lda.at_lda()
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
 def view_topics(request):
 	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted_manual_processed', 60, 20)
