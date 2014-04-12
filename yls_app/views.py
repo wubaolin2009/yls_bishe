@@ -26,7 +26,7 @@ def index(request):
 # TODO: save the sdk to db and use alternative client ids
 def get_qqweibo_client():
 	#return qqweibo_sdk.Client.get_client('801486706', 'ccb88ca0bd2d2ab59465abf45818567e', redirect_uri='http://117.121.26.136:12333/yls_app/get_qq_token')
-	return qqweibo_sdk.Client('801486704', 'f8a0cb0327d53a71aba609707c3ea239', redirect_uri='http://10.60.37.176:12333/yls_app/get_qq_token')
+	return qqweibo_sdk.Client('801486704', 'f8a0cb0327d53a71aba609707c3ea239', redirect_uri='http://10.60.37.241:12333/yls_app/get_qq_token')
 
 def show_crawl_weibo(request):
 	''' involves 3 phrase
