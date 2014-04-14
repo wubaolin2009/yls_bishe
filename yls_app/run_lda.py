@@ -7,16 +7,23 @@ import cPickle, string, numpy, getopt, sys, random, time, re, pprint
 import onlineldavb
 import thread
 from yls_app.models import *
+from gibbs_lda import run_lda_gibbs
 
 # this option, when True, turned more verbose vocabulary
-verbose_vocabulary = True
+verbose_vocabulary = False
+# we use only a fraction of the users to evaluate the performance
 def calc_file_counts():
     global verbose_vocabulary
     if verbose_vocabulary:
         count = TweetToken.objects.count()
     else:
         count = TweetUserToken.objects.count()
+    
+    # use only small numbers to evalutate
+    if verbose_vocabulary == False:
+        return 150
     return count
+
 
 file_counts = 0
 g_all_files = []
@@ -58,9 +65,14 @@ def read_vocab(file_name):
 
 class LDARunner(object):
     @staticmethod
-    def start_run_lda(meaningful_words_path, batchsize=2900000, K=80, GAMMA_ITER_TIMES=400):
+    def start_run_lda_online(meaningful_words_path, batchsize=15, K=80, GAMMA_ITER_TIMES=1000):
 #        thread.start_new_thread(LDARunner.run_lda, (meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES))
         LDARunner.run_lda(meaningful_words_path, batchsize, K, GAMMA_ITER_TIMES)
+
+    @staticmethod
+    def start_run_lda_gibbs(meaningful_words_path, K = 80, iterations = 200, alpha = 2, beta = 0.5):
+#        thread.start_new_thread(run_lda_gibbs,(meaningful_words_path,K,iterations,alpha,beta))
+        run_lda_gibbs(meaningful_words_path,K,iterations,alpha,beta)
 
     LAMBDA_FILE = 'yls_app/tools/lambda.dat'
     GAMMA_FILE = 'yls_app/tools/gamma.dat'
@@ -99,7 +111,7 @@ class LDARunner(object):
             olda = onlineldavb.OnlineLDA(vocab, K, D, 1./K, 1./K, 1024., 0.7, GAMMA_ITER_TIMES)
             # Run until we've seen all documents.
             for iteration in range(documentstoanalyze):
-                print 'iteration ... %d'%iteration
+                # print 'iteration ... %d'%iteration
                 # Download some articles
                 docset = get_article(iteration * batchsize, batchsize)
                 # Give them to online LDA
@@ -110,10 +122,14 @@ class LDARunner(object):
                 t.infomation = '%d:  rho_t = %f,  held-out perplexity estimate = %f' % \
                     (iteration, olda._rhot, numpy.exp(-perwordbound))
                 last_iteration_perplexity = numpy.exp(-perwordbound)
+                print perwordbound,bound
+                if iteration == documentstoanalyze -1:
+                    break
+                print '%d,%f'%(iteration,last_iteration_perplexity)
 
                 t.status = Task.TASK_STATUS_STARTED
                 t.save()
-                print 'perplexity: %f'%(last_iteration_perplexity)
+                #print 'perplexity: %f'%(last_iteration_perplexity)
 
                 # Save lambda, the parameters to the variational distributions
                 # over topics, and gamma, the parameters to the variational

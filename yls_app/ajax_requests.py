@@ -36,11 +36,11 @@ class Cutter(object):
         g_filter2 = FilterNoCharacter()
         count = 0
         print 'start cut_no_group......'
-        fake = range(5295977, Tweet.objects.all().count(), 1000)
+        fake = range(0,Tweet.objects.all().count(),100)
 
         for start in fake:
             count = 0
-            for weibo in Tweet.objects.all()[start:start+1000]:
+            for weibo in Tweet.objects.all()[start:start+100]:
                 #print 'processing weibo ', weibo.tweet_id
                 count += 1
                 if (start + count) % 1000 == 0:
@@ -308,7 +308,8 @@ class LDAHandler(object):
 	@staticmethod
 	def start_lda(tokenized_folder,meaningful_words_raw_path):
 		meaningful_words_path = meaningful_words_raw_path + "_converted" + '_manual_processed';
-                LDARunner.start_run_lda(meaningful_words_path)
+#                LDARunner.start_run_lda_online(meaningful_words_path)
+                LDARunner.start_run_lda_gibbs(meaningful_words_path)
  
         @staticmethod
         def view_result(vocab_file, topic_numbers, word_in_topic):

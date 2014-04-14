@@ -13,6 +13,7 @@ from qqweibo_sdk import QQWeiboUtils
 from goods import *
 import HTMLParser
 import at_lda
+import gibbs_lda
 
 # Create your views here.
 
@@ -136,7 +137,9 @@ def run_at_lda(request):
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
 def view_topics(request):
-	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted_manual_processed', 60, 20)
+#	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted_manual_processed', 60, 20)
+	result = gibbs_lda.get_results('yls_app/tools/wbl_80_converted_manual_processed',60,20)
+
 	if result['success'] == 0:
 		return render(request, 'yls_app/show_message.html', {
 		'message' : result['message'],
