@@ -214,7 +214,7 @@ def run_lda_gibbs(meaningful_words_path,K, iterations,alpha=2,beta=0.5):
     iterations = 1
 
     documents = []
-    for entry in TweetUserToken.objects.all().iterator():
+    for entry in TweetUserToken.objects.all()[0:500]:
         tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
         this_doct = map(lambda k:V.index(k), tokens)
         assert all(map(lambda k:k != -1,this_doct))
@@ -270,7 +270,7 @@ def get_results(vocab_file, topic_numbers, word_in_topic):
             ret['topics'].append(this_topic)
         return ret
 
-    vocab = read_vocab(vocab_file)
+    vocab = run_lda.read_vocab(vocab_file)
 
     f = open('yls_app/phi','r')
     phi = pickle.load(f)
@@ -287,7 +287,7 @@ def get_results(vocab_file, topic_numbers, word_in_topic):
         t.save()
 
         topic_color = panel_types[random.randint(0,len(panel_types)-1)]
-        phi_this_topic = [(i,phi[i]) for i in phi.keys()]
+        phi_this_topic = [(i,phi[k][i]) for i in phi[k].keys()]
         phi_this_topic.sort(reverse=True,key=lambda k:k[1])
         for i in range(0, word_in_topic):
             word,freq = phi_this_topic[i]
