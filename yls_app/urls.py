@@ -28,4 +28,5 @@ urlpatterns = patterns('',
     url(r'run_at_lda', views.run_at_lda, name='run_at_lda'),
     url(r'perplexity', views.perplexity, name='get_perplexity'),
     url(r'at_per', views.perplexity_at, name='get_perplexity_at'),
+    url(r'view_at_topics', views.view_at_topics, name='view_at_topics'),
 )

@@ -11,18 +11,18 @@ import time
 import pickle
 # parameters for AT-LDA
 K = 30
-alpha = 1.0/K
+alpha = 50.0/K
 beta = 0.01
-alpha = 2.0
-beta = 0.5
+#alpha = 2.0
+#beta = 0.5
 # Author Number
 Author_number = 50
-iterations_to_train = 50
+iterations_to_train = 500
 # where the test set begins and ends
 TEST_BEGIN = 100
 TEST_NUMBER = 10
 TEST_END = TEST_BEGIN + TEST_NUMBER
-infer_iterations = 50
+infer_iterations = 10
 
 def cal_na(nak,a):
     return sum(nak[a])
@@ -52,7 +52,7 @@ def get_results():
     return results
 
 def at_lda():
-    for K in [80,90,100,110]:
+    for K in [30]:
         print 'KKKKKKKKKKKKKKKKKKKKKKK',K
         at_lda_inner(K)
     calculate_perplexity()
@@ -346,3 +346,29 @@ def calculate_perplexity_inner(TEST_K):
 
     print 'perplexity ',p_final
     return p_final
+
+def get_at_results(vocab_file, topic_numbers, word_in_topic):
+    ret = dict()
+    ret['success'] = 1
+    ret['message'] = 'success'
+    ret['topics'] = []
+    # randomly choose one type of panel
+    panel_types = ('panel-primary','panel-success','panel-info','panel-warning','panel-danger')
+    K = topic_numbers
+    V = run_lda.read_vocab(vocab_file)
+    phi = get_results()[K]['phi']
+
+    for k in range(0, topic_numbers):
+        this_topic = []
+
+        topic_color = panel_types[random.randint(0,len(panel_types)-1)]
+        print len(phi)
+        phi_this_topic = [(i,phi[k][i]) for i in range(len(phi[k]))]
+        phi_this_topic.sort(reverse=True,key=lambda k:k[1])
+        for i in range(0, word_in_topic):
+            word,freq = phi_this_topic[i]
+#            TopicWord(topic=t, word=vocab[word], freq = "%.10f"%freq).save()
+            this_topic.append([k, V[word], "%.6f"%freq, topic_color, u'未分类']) # add color
+        ret['topics'].append(this_topic)
+
+    return ret
