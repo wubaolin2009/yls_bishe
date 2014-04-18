@@ -138,7 +138,7 @@ def run_at_lda(request):
 
 def view_topics(request):
 #	result = LDAHandler.view_result('yls_app/tools/wbl_80_converted_manual_processed', 60, 20)
-	result = gibbs_lda.get_results('yls_app/tools/wbl_80_converted_manual_processed',60,20)
+	result = gibbs_lda.get_results('yls_app/tools/wbl_80_converted_manual_processed',30,20)
 
 	if result['success'] == 0:
 		return render(request, 'yls_app/show_message.html', {
@@ -373,4 +373,14 @@ def view_weibo_by_user(request):
 
 def clear_topics(request):
 	relations_jpg = AjaxHandler.clear_topic_result()
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
+
+def perplexity(request):
+	gibbs_lda.cal_perplexity('yls_app/tools/wbl_80_converted_manual_processed','yls_app/phi','yls_app/theta',40)
+	assert False
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
+
+def perplexity_at(request):
+	at_lda.calculate_perplexity()
+	assert False
 	return HttpResponseRedirect('/yls_app/crawl_weibo')

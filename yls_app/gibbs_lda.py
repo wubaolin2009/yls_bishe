@@ -28,11 +28,104 @@ class LdaGibbsSampler:
         self.nw = {} # number of instances of word i (term?) assigned to topic j
         self.nd = {} # number of words in document i assigned to topic j
         self.nwsum = {} # total number of words assigned to topic j
+        ''' the following section is used for inference '''
+        self.new_ndsum = {}
+        self.new_nw = {}
+        self.new_nd = {}
+        self.new_nwsum = {}
+        self.new_M = 0
+        self.new_z = {}
+        self.new_D = []
+        ''' end new section '''
         self.z = {} # topic assignments for each word
         self.phisum = {}
         self.numstats = 0.0
         self.thetasum = {}
         self.run()
+
+    def prepare_new_inference(self,docs_new,K,iterations):
+        ''' load the neccesary z '''
+        results = read_results()
+
+        assert K in results.keys(),'The K %d not been calculated!'%(K,iterations)
+        self.z = results[K]['z']
+        self.new_M = len(docs_new)
+        self.new_D = docs_new
+        assert self.K == K
+        ''' nd sum '''
+        for i in range(self.new_M):
+            self.new_ndsum[i] = 0.0
+        ''' nw sum '''
+        for j in range(self.K):
+            self.nwsum[j] = 0.0
+        ''' nw '''
+        for i in range(self.V):
+            self.new_nw[i] = {}
+            for j in range(self.K):
+                self.new_nw[i][j] = 0.0
+        ''' nd '''
+        for i in range(self.new_M):
+            self.new_nd[i] = {}
+            for j in range(self.K):
+                self.new_nd[i][j] = 0.0
+        ''' init all the old nds, nws '''
+        for m in range(self.M):
+            N = len(self.D[m])
+            for n in range(N):
+                topic = self.z[m][n]
+                self.nw[self.D[m][n]][topic] = self.nw[self.D[m][n]].get(topic, 0) + 1
+                self.nd[m][topic] = self.nd[m].get(topic, 0) + 1
+                self.nwsum[topic] = self.nwsum.get(topic, 0) + 1
+            self.ndsum[m] = N
+
+        ''' init all the new nds, nws '''
+        for m in range(self.new_M):
+            N = len(self.new_D[m]) 
+            self.new_z[m] = []
+            for n in range(N):
+                topic = int(random.random() * self.K)
+                self.new_z[m].append(topic)
+                self.new_nw[self.new_D[m][n]][topic] = self.new_nw[self.new_D[m][n]].get(topic, 0) + 1
+                self.new_nd[m][topic] = self.new_nd[m].get(topic, 0) + 1
+                self.new_nwsum[topic] = self.new_nwsum.get(topic, 0) + 1
+            self.new_ndsum[m] = N
+            
+    def gibbs_inferecne(self,alpha, beta, infer_iteration):
+        self.alpha = alpha
+        self.beta = beta
+
+        for i in range(self.maxIter):
+            print "in inference iteration", i , time.ctime()
+            for m in range(len(self.new_z)):
+                for n in range(len(self.new_z[m])):
+                    self.new_z[m][n] = self.sample_full_conditional_infer(m, n)
+
+    def sample_full_conditional_infer(self, m, n):
+        topic = self.new_z[m][n]
+        w = self.new_D[m][n]
+        
+        self.new_nw[w][topic] -= 1
+        self.new_nd[m][topic] -= 1
+        self.new_nwsum[topic] -= 1
+        self.new_ndsum[m] -= 1
+
+        p = {}
+        for k in range(self.K):
+            p[k] = (self.new_nw[w][k] + self.nw[w][k] + self.beta) / (self.nwsum[k] + self.new_nwsum[k] + self.V * self.beta) * (self.new_nd[m][k] + self.alpha) / (self.new_ndsum[m] + self.K * self.alpha)
+        
+        for k in range(1, len(p)): p[k] += p[k - 1]
+        u = random.random() * p[self.K - 1]
+        for topic in range(len(p)):
+            if u < p[topic]: break
+
+        self.new_nw[w][topic] += 1  
+        self.new_nd[m][topic] += 1  
+        self.nwsum[topic] += 1
+        self.new_ndsum[m] += 1
+
+        return topic
+
+
 
     def run(self):
         self.set_ND()\
@@ -121,8 +214,8 @@ class LdaGibbsSampler:
                 for n in range(len(self.z[m])):
                     self.z[m][n] = self.sample_full_conditional(m, n)
 
-#            if i > self.burnIn and self.sampleLag > 0 and i % self.sampleLag == 0:
-            self.update_params()
+            if i % 100 == 0:
+                self.update_params()
 
     def sample_full_conditional(self, m, n):
         topic = self.z[m][n]
@@ -190,6 +283,20 @@ class LdaGibbsSampler:
                     theta[m][k] = (self.nd[m][k] + self.alpha) / (self.ndsum[m] + self.K * self.alpha); 
         return theta
 
+    def get_new_theta(self):
+        theta = {}
+        for m in range(self.new_M):
+            theta[m] = {}
+            for k in range(self.K):
+                theta[m][k] = 0
+
+        for m in range(self.new_M):
+            for k in range(self.K):
+                theta[m][k] = (self.new_nd[m][k] + self.alpha) / (self.new_ndsum[m] + self.K * self.alpha); 
+
+        return theta
+        
+
     def get_phi(self):
         phi = {}
         for k in range(self.K):
@@ -206,51 +313,60 @@ class LdaGibbsSampler:
                     phi[k][v] = (self.nw[k][v] + self.alpha) / (self.nwsum[k] + self.K * self.alpha); 
         return phi
 
+
 def run_lda_gibbs(meaningful_words_path,K, iterations,alpha=2,beta=0.5):
     # generate the file formats needed by the LDA sampler
     print 'start runing lda gibbs....'
     V = run_lda.read_vocab(meaningful_words_path)
     Vset = set(V)
-    iterations = 1
-
+    iterations = 100
+    K = 10
     documents = []
-    for entry in TweetUserToken.objects.all()[0:500]:
+    for entry in TweetUserToken.objects.all()[0:50]:
         tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
         this_doct = map(lambda k:V.index(k), tokens)
         assert all(map(lambda k:k != -1,this_doct))
+        if len(this_doct) > 1500:
+            random.shuffle(this_doct)
+            this_doct = this_doct[0:1500]
+
         documents.append(this_doct)
+    fommm = map(len,documents)
+    fommm.sort()
+    print fommm[0], fommm[-1]
 
     print 'Documents readed %d'%(len(documents))
+    for K in [20]:
+        lda = LdaGibbsSampler(documents, K, len(V))
+        lda.configure(iterations,2000,20)
+        lda.gibbs(alpha,beta)
+        theta = lda.get_theta()
+        # theta is in the format of 
+        # {docid: {topic0: prob, topic1:prob}}
     
-    lda = LdaGibbsSampler(documents, K, len(V))
-    lda.configure(iterations,2000,20)
-    lda.gibbs(alpha,beta)
-    theta = lda.get_theta()
-    # theta is in the format of 
-    # {docid: {topic0: prob, topic1:prob}}
+        phi = lda.get_phi()
+        # phi is in the formate of
+        # {topicid: {word0:prob, ... , word0:}}
+        save_to_file(K,iterations,phi,theta,lda.z)
 
-    phi = lda.get_phi()
-    # phi is in the formate of
-    # {topicid: {word0:prob, ... , word0:}}
+def save_to_file(K,iterations,phi,theta,z):
+    ''' results = {(K,iterations):{phi,theta,z}} } '''
+    if os.path.exists('yls_app/gibbs_results'):
+        f = open('yls_app/gibbs_results','r')
+        results = pickle.load(f)
+        f.close()
+    else:
+        results = {}
 
-    # save using pickle
-    f = open('yls_app/phi','w')
-    pickle.dump(phi,f)
+    if K not in results.keys():
+        results[K] = {}
+    results[K]['phi'] = phi
+    results[K]['theta'] = theta
+    results[K]['z'] = z
+
+    f = open('yls_app/gibbs_results','w')
+    pickle.dump(results,f)
     f.close()
-
-    f = open('yls_app/theta','w')
-    pickle.dump(theta,f)
-    f.close()
-    
-    #print the topic distribution
-#    for topic in range(10):
-#        print 'Topic %d'%(topic)
-#        words = phi[topic]
-#        words = [(i,words[i]) for i in words.keys()]
-#        words.sort(key=lambda a:a[1], reverse=True)
-#        for a_word in words[0:10]:
-#            print V[a_word[0]],'::',a_word[1]
-
 
 def get_results(vocab_file, topic_numbers, word_in_topic):
     ret = dict()
@@ -296,3 +412,71 @@ def get_results(vocab_file, topic_numbers, word_in_topic):
         ret['topics'].append(this_topic)
 
     return ret
+
+def read_results():
+    f = open('yls_app/gibbs_results','r')
+    results = pickle.load(f)
+    f.close()
+    return results
+
+def cal_perplexity(meaningful_words_path,phi_file_name,theta_file_name,K):
+    perplexity = {}
+    for K in [100, 70, 40, 10, 110, 80, 50, 20, 90, 60, 30]:
+        perplexity[K] = cal_perplexity_inner(meaningful_words_path,phi_file_name,theta_file_name,K)
+    for ww in perplexity.keys():
+        print 'Topic %d, perplexity %f',ww,perplexity[ww]
+    return perplexity
+
+def cal_perplexity_inner(meaningful_words_path,phi_file_name,theta_file_name,K):
+    ''' use the 100-110 to test the model '''
+    alpha = 2.0
+    beta = 0.5
+    N_TEST = 10
+    TEST_START = 100
+
+    V = run_lda.read_vocab(meaningful_words_path)
+    Vset = set(V)
+    documents = []
+    for entry in TweetUserToken.objects.all()[0:50]:
+        tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
+        this_doct = map(lambda k:V.index(k), tokens)
+        if len(this_doct) > 1500:
+            random.shuffle(this_doct)
+            this_doct = this_doct[0:1500]
+        assert all(map(lambda k:k != -1,this_doct))
+        documents.append(this_doct)
+    new_documents = []
+    for entry in TweetUserToken.objects.all()[TEST_START:TEST_START+N_TEST]:
+        tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
+        this_doct = map(lambda k:V.index(k), tokens)
+        assert all(map(lambda k:k != -1,this_doct))
+        new_documents.append(this_doct)
+
+    def do_inference(iterations):
+        lda = LdaGibbsSampler(documents,K,len(V))
+        lda.configure(iterations,2000,20)
+        lda.prepare_new_inference(new_documents,K,iterations)
+        lda.gibbs_inferecne(alpha,beta,iterations)
+        return lda.get_new_theta()
+
+    new_theta = do_inference(100)
+    phi = read_results()[K]['phi']
+
+    def p(w,d):
+        ''' p(w) = sigma_z P(z,w) = sigma_z P(z) * p(w|z)
+        w is the index of V '''
+        return sum([new_theta[d][z] * phi[z][w] for z in range(K)])
+
+    p_final = 1.0
+    for i in range(len(new_documents)):
+        doc = new_documents[i]
+#    for doc in documents:
+        for a_word in doc:
+            p_a_word = p(a_word,i)
+            p_final *= (1.0/p_a_word)**(1.0/sum(map(len,new_documents)) )
+
+    print 'perplexity ',p_final
+    print read_results().keys()
+    return p_final
+
+    
