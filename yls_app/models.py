@@ -145,6 +145,16 @@ class Goods(models.Model):
 	product_category = models.CharField(max_length = 30)
 	product_image_url = models.CharField(max_length = 100,null=True)
 
+# Save the Dangdang Processed data
+class GoodsProcessed(models.Model):
+	product_html = models.CharField(primary_key=True, max_length=50, db_index=True)
+	product_des = models.TextField()
+	product_category = models.CharField(max_length=30)
+
+class GoodsProcessedGroup(models.Model):
+	category_name = models.CharField(primary_key=True, max_length=180, db_index=True)
+	product_des = models.CharField(max_length=1800)
+
 # save the lda results
 class Topic(models.Model):
         topic_id = models.IntegerField(primary_key=True)
@@ -154,3 +164,4 @@ class TopicWord(models.Model):
         topic = models.ForeignKey(Topic,related_name='topic_topic_word')
         word = models.CharField(max_length=30)
         freq = models.CharField(max_length=20)
+

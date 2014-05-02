@@ -29,4 +29,7 @@ urlpatterns = patterns('',
     url(r'perplexity', views.perplexity, name='get_perplexity'),
     url(r'at_per', views.perplexity_at, name='get_perplexity_at'),
     url(r'view_at_topics', views.view_at_topics, name='view_at_topics'),
+    url(r'goods_process',views.goods_process,name='goods_process'),
+    url(r'goodsgroup_process',views.goodsgroup_process,name='goodsgroup_process'),
+    url(r'rec', views.rec, name='views_rec'),                     
 )

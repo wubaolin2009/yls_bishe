@@ -480,3 +480,61 @@ def cal_perplexity_inner(meaningful_words_path,phi_file_name,theta_file_name,K):
     return p_final
 
     
+def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
+    # generate the file formats needed by the LDA sampler
+    print 'start runing lda gibbs....'
+    V = run_lda.read_vocab(meaningful_words_path)
+    Vset = set(V)
+    iterations = 100
+    K = 40
+    new_documents = []
+    documents = []
+
+    # read the tweets of this user
+    for entry in TweetUserToken.objects.filter(user_name=user):
+        tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
+        this_doct = map(lambda k:V.index(k), tokens)
+        assert all(map(lambda k:k != -1,this_doct))
+        new_documents.append(this_doct)
+    # read old data
+    for entry in TweetUserToken.objects.all()[0:50]:
+        tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
+        this_doct = map(lambda k:V.index(k), tokens)
+        if len(this_doct) > 1500:
+            random.shuffle(this_doct)
+            this_doct = this_doct[0:1500]
+        assert all(map(lambda k:k != -1,this_doct))
+        documents.append(this_doct)
+ 
+    def do_inference(iterations,new):
+        lda = LdaGibbsSampler(documents,K,len(V))
+        lda.configure(iterations,2000,20)
+        lda.prepare_new_inference(new,K,iterations)
+        lda.gibbs_inferecne(alpha,beta,iterations)
+        return lda.get_new_theta()
+
+    new_theta = do_inference(1,new_documents)
+    # the distribution of this user is ready
+    assert len(new_theta) == 1
+    print new_theta
+    assert False
+    
+    goods_documents = []
+    goods_html = []
+    for entry in GoodsProcessed.objects.all().iterator():
+        tokens = filter(lambda k:k in Vset, entry.product_des.split(u' '))
+        this_doct = map(lambda k:V.index(k), tokens)
+        assert all(map(lambda k:k != -1,this_doct))
+        goods_documents.append(this_doct)
+        goods_html.append(entry.product_html)
+    
+    new_theta_goods = do_inference(1,goods_documents)
+    assert len(new_theta_goods) == len(goods_html)
+    new_theta_goods = zip(goods_html,new_theta_goods)
+
+    def cal_distance(that):
+        return 1
+
+    results = sorted(new_theta_goods, key=lambda k:cal_distance(k[1]))
+    print results[0]
+    assert False

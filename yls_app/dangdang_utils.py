@@ -8,6 +8,10 @@ from sgmllib import SGMLParser
 import sgmllib
 import chardet
 from yls_app.models import *
+from cut import *
+import jieba
+import run_lda
+
 class URLLister(SGMLParser):
     def __init__(self, verbose = 0):
         sgmllib.SGMLParser.__init__(self, verbose)
@@ -148,3 +152,59 @@ class DangDang(object):
                 except Exception,e:
                     print e
                     raise e
+    @staticmethod
+    def cut_words(product_des,V):
+        g_filter = FilterMeaningless()
+        g_filter2 = FilterNoCharacter()
+        context = EliminateURL.get_processed_text(product_des)
+        seg_list = jieba.cut(context, cut_all=False)
+        final_results = []
+        for m in seg_list:
+            if g_filter.valid(m) and g_filter2.valid(m) and m in V:
+        	    final_results.append(m)
+        return final_results
+
+    @staticmethod
+    def process_goods():
+        V = run_lda.read_vocab('yls_app/tools/wbl_80_converted_manual_processed')
+        V = set(V)
+
+        for product in Goods.objects.all().iterator():
+            words = DangDang.cut_words(product.product_name,V)
+            result = GoodsProcessed()
+            result.product_html = product.product_html
+            result.product_des = u' '.join(words)
+            result.product_category = product.product_category
+            if len(words) > 0:
+                result.save()
+
+    @staticmethod
+    def process_goods_by_group():
+        V = run_lda.read_vocab('yls_app/tools/wbl_80_converted_manual_processed')
+        V = set(V)
+        groups = {}
+        count = 0
+        for product in Goods.objects.all().iterator():
+            count += 1
+            if count % 100 == 0:
+                print 'cuttted %d'%(count)
+            words = DangDang.cut_words(product.product_name,V)
+            result = GoodsProcessed()
+            result.product_html = product.product_html
+            result.product_des = u' '.join(words)
+            result.product_category = product.product_category
+            if product.product_category not in groups.keys():
+                groups[product.product_category] = []
+            groups[product.product_category].append(result)
+
+        count = 0
+        for m in groups.keys():
+            count += 1
+            if count % 100 == 0:
+                print 'saved %d'%(count)
+            entry = GoodsProcessedGroup()
+            entry.category_name = m
+            words = u' '.join([i.product_des for i in groups[m]])
+            entry.product_des = words
+            entry.save()
+            

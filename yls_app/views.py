@@ -14,7 +14,7 @@ from goods import *
 import HTMLParser
 import at_lda
 import gibbs_lda
-
+from dangdang_utils import DangDang
 # Create your views here.
 
 def index(request):
@@ -299,6 +299,7 @@ def get_tweet_count(user_name):
 
 def view_weibouser(request):
 	page_num = request.GET['page_num'] if 'page_num' in request.GET.keys() else 1
+	recommended = 1 if 'rec' in request.GET.keys() else 0
 
 	column_descs = ['image', 'link', 'text']
 	table = []
@@ -321,8 +322,12 @@ def view_weibouser(request):
 		row = [image_url, title, last_weibo]
 		row.append('')
 		#row.append('http://t.qq.com/'+user.name)
-		row.append('/yls_app/view_weibo_by_user?user_name='+user.name)
-		table.append(row)
+		if recommended == 0:
+                    row.append('/yls_app/view_weibo_by_user?user_name='+user.name)
+		else:
+                    row.append('/yls_app/view_weibo_by_user?user_name='+user.name + '&rec=1')
+                table.append(row)
+
 	param = {
 		'which_side_bar_to_select': 1,
 		'column_descs':column_descs,
@@ -333,10 +338,13 @@ def view_weibouser(request):
 		'page_count': get_page_count(all_counts),
 		'page_url':'/yls_app/view_weibouser',
 	}
+	if recommended == 1:
+	    param['subtitle'] = 'Choose the user to reccommend goods'
 	return render(request, 'yls_app/general_view.html',param)
 
 def view_weibo_by_user(request):
 	page_num = request.GET['page_num'] if 'page_num' in request.GET.keys() else 1
+	rec = 1 if 'rec' in request.GET.keys() else 0
 	user_name = request.GET['user_name']
 	user = WeiboUser.objects.filter(name=user_name)[0]
 	column_descs = ['image', 'text', 'text']
@@ -369,6 +377,9 @@ def view_weibo_by_user(request):
 		'param1_key':'user_name',
 		'param1_value': user_name,
 	}
+	if rec == 1:
+	    param['subtitle'] = u'<a href="%s">%s</a>'%('/yls_app/rec?user='+user_name, u'Recommend')
+
 	return render(request, 'yls_app/general_view.html',param)
 
 def clear_topics(request):
@@ -385,6 +396,14 @@ def perplexity_at(request):
 	assert False
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
+def goods_process(request):
+	DangDang.process_goods()
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
+
+def goodsgroup_process(request):
+	DangDang.process_goods_by_group()
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
+
 def view_at_topics(request):
 	result = at_lda.get_at_results('yls_app/tools/wbl_80_converted_manual_processed',30,25)
 
@@ -398,3 +417,10 @@ def view_at_topics(request):
 		'qq_status': get_current_qq_status(request),
 		'topics' : (result['topics'][0::3],result['topics'][1::3],result['topics'][2::3])
 		})
+
+def rec(request):
+	''' the most import function in this project, to reccomend goods to a user'''
+	user = request.GET['user']
+	gibbs_lda.recommend('yls_app/tools/wbl_80_converted_manual_processed',user)
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
+	
