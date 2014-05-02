@@ -120,7 +120,7 @@ class LdaGibbsSampler:
 
         self.new_nw[w][topic] += 1  
         self.new_nd[m][topic] += 1  
-        self.nwsum[topic] += 1
+        self.new_nwsum[topic] += 1
         self.new_ndsum[m] += 1
 
         return topic
@@ -578,11 +578,18 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
 
     def cal_distance(that):
         #print that
-        return abs(cos(new_theta,that))
+        return cos(new_theta,that)
 
     results = sorted(new_theta_goods, key=lambda k:cal_distance(k[1]),reverse=True)
     print 'Choosable', len(new_documents)
     for m in results[0:15]:
         print m[0], abs(cos(new_theta,m[1]))
-    assert False
-    return results
+    # {user:new_theta, goods:[[m[1], cos]]}
+    ret_results = []
+    ret_results.append(new_theta)
+    count = 1
+    for m in results[0:15]:
+        ret_results.append([m[0],m[1],'goods_%d.png'%(count),cos(new_theta,m[1])])
+        count += 1
+    
+    return ret_results

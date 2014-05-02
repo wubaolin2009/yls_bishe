@@ -13,6 +13,7 @@ from qqweibo_sdk import QQWeiboUtils
 from goods import *
 import HTMLParser
 import at_lda
+import matplotlib.pyplot as plt
 import gibbs_lda
 from dangdang_utils import DangDang
 # Create your views here.
@@ -422,6 +423,25 @@ def view_at_topics(request):
 def rec(request):
 	''' the most import function in this project, to reccomend goods to a user'''
 	user = request.GET['user']
-	gibbs_lda.recommend('yls_app/tools/wbl_80_converted_manual_processed',user)
-	return HttpResponseRedirect('/yls_app/crawl_weibo')
+	results = gibbs_lda.recommend('yls_app/tools/wbl_80_converted_manual_processed',user)
+#	results = [[0.3,0.3,0.1,0.22,0.11],[u'WaWa', [0.1,0.1,0.2,0.2,0.4], 0.12 ]]
+
+	# make the temperary image @ yls_app/goods_%d.png
+	xx = range(len(results[1][1]))
+	for i in range(1,len(results)):
+            user,goods = plt.plot(xx,results[0],'r.-',xx, results[i][1],'g.-')
+	    user.set_label("user")
+	    goods.set_label("Goods")
+	    plt.legend(loc='upper right', shadow=True)
+	    plt.savefig('yls_app/static/yls_app/temp_img_results/goods_%d.png'%(i) )
+	    plt.clf()
 	
+	return render(request, 'yls_app/rec_goods.html', {
+		'which_side_bar_to_select': 1,
+		'qq_status': get_current_qq_status(request),
+		'user_topic': results[0],
+		'goods': results[1:],
+		'img_temp': "goods_1.png",
+		'title': 'Goods Recommended',
+		})
+

@@ -1,0 +1,36 @@
+{% extends "yls_app/base.html" %}
+{% load staticfiles %}
+
+{% block title %} {{title}} {% endblock %}
+
+{% block content %}
+<div class="panel panel-warning">
+  <div class="panel-heading">
+    <div class="panel-body" id="to_render">
+      <ul class="list-group">
+      {% for line in goods %}
+        <li class="list-group-item list-group-item-success">
+          <div class="media">
+            <a class="pull-left" href="#">
+              <img width="256px" class="media-object" src="{% static 'yls_app/temp_img_results/' %}{{line.2}}" alt="...">
+            </a>
+            <div class="media-body">
+              <h4 class="media-heading">{{line.0}}</h4>
+              ...
+            </div>
+          </div>
+	</li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+<script type="text/javascript">
+</script>
+<script src={% static "yls_app/js/imgpreview.full.jquery.js" %}>
+</script>
+{% endblock %}
