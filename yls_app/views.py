@@ -377,8 +377,9 @@ def view_weibo_by_user(request):
 		'param1_key':'user_name',
 		'param1_value': user_name,
 	}
-	if rec == 1:
-	    param['subtitle'] = u'<a href="%s">%s</a>'%('/yls_app/rec?user='+user_name, u'Recommend')
+
+        param['subtitle'] = u'<a href="%s">%s</a>'%('/yls_app/rec?user='+user_name, u'Recommend')
+        param['page_url'] = '/yls_app/view_weibo_by_user?rec=1'
 
 	return render(request, 'yls_app/general_view.html',param)
 

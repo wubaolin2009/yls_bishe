@@ -479,6 +479,19 @@ def cal_perplexity_inner(meaningful_words_path,phi_file_name,theta_file_name,K):
     print read_results().keys()
     return p_final
 
+# inference the goods's topic distribution
+def read_goods_group_topic_results():
+    if os.path.exists('yls_app/goods_results') == False:
+        return {}
+    f = open('yls_app/goods_results','r')
+    results = pickle.load(f)
+    f.close()
+    return results
+
+def save_goods_group_topic_results(result):
+    f = open('yls_app/goods_results','w')
+    pickle.dump(result,f)
+    f.close()
     
 def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
     # generate the file formats needed by the LDA sampler
@@ -489,6 +502,9 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
     K = 40
     new_documents = []
     documents = []
+    results = read_goods_group_topic_results()
+    save_the_results = False
+    load_from_results = True
 
     # read the tweets of this user
     for entry in TweetUserToken.objects.filter(user_name=user):
@@ -496,6 +512,7 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
         this_doct = map(lambda k:V.index(k), tokens)
         assert all(map(lambda k:k != -1,this_doct))
         new_documents.append(this_doct)
+    new_documents = [new_documents[0]]
     # read old data
     for entry in TweetUserToken.objects.all()[0:50]:
         tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
@@ -513,28 +530,59 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
         lda.gibbs_inferecne(alpha,beta,iterations)
         return lda.get_new_theta()
 
-    new_theta = do_inference(1,new_documents)
-    # the distribution of this user is ready
-    assert len(new_theta) == 1
-    print new_theta
-    assert False
-    
-    goods_documents = []
     goods_html = []
-    for entry in GoodsProcessed.objects.all().iterator():
+    for entry in GoodsProcessedGroup.objects.all().iterator():
         tokens = filter(lambda k:k in Vset, entry.product_des.split(u' '))
         this_doct = map(lambda k:V.index(k), tokens)
         assert all(map(lambda k:k != -1,this_doct))
-        goods_documents.append(this_doct)
-        goods_html.append(entry.product_html)
+        if len(tokens) > 15:
+            new_documents.append(this_doct)
+            #print this_doct
+            goods_html.append(entry.category_name)
+
+    if load_from_results == False:
+        new_theta_goods = do_inference(100,new_documents)
+        new_theta_goods = [new_theta_goods[k] for k in new_theta_goods.keys()]
+        new_theta_goods = [[m[k] for k in m.keys()] for m in new_theta_goods]
+        new_theta = new_theta_goods[0]
+        new_theta_goods = new_theta_goods[1:]
+    else:
+        the_results = read_goods_group_topic_results()
+        new_documents = [new_documents[0]]
+        new_theta = do_inference(10,new_documents)
+        new_theta = [new_theta[k] for k in new_theta.keys()]
+        new_theta = [[m[k] for k in m.keys()] for m in new_theta]
+        new_theta_goods = [(k,the_results[k]) for k in the_results.keys()]
+        #print new_theta_goods
+        new_theta = new_theta[0]
     
-    new_theta_goods = do_inference(1,goods_documents)
-    assert len(new_theta_goods) == len(goods_html)
-    new_theta_goods = zip(goods_html,new_theta_goods)
+    if save_the_results == True:
+        for i in range(len(goods_html)):
+            results[goods_html[i]] = new_theta_goods[i]
+        #print results
+        save_goods_group_topic_results(results)
+
+    if load_from_results == False:
+        assert len(new_theta_goods) == len(goods_html)
+        new_theta_goods = zip(goods_html,new_theta_goods)
+
+    def cos(a,b):
+        #print b[0]
+        #print len(a),len(b)
+        assert len(a) == len(b)
+        amb = sum([a[k]*b[k] for k in range(len(a))])
+        a_mod = sum([a[k]**2 for k in range(len(a))])**0.5
+        b_mod = sum([b[k]**2 for k in range(len(b))])**0.5
+        #print amb/(a_mod*b_mod)
+        return amb/(a_mod*b_mod)
 
     def cal_distance(that):
-        return 1
+        #print that
+        return abs(cos(new_theta,that))
 
-    results = sorted(new_theta_goods, key=lambda k:cal_distance(k[1]))
-    print results[0]
+    results = sorted(new_theta_goods, key=lambda k:cal_distance(k[1]),reverse=True)
+    print 'Choosable', len(new_documents)
+    for m in results[0:15]:
+        print m[0], abs(cos(new_theta,m[1]))
     assert False
+    return results

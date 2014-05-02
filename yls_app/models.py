@@ -154,6 +154,7 @@ class GoodsProcessed(models.Model):
 class GoodsProcessedGroup(models.Model):
 	category_name = models.CharField(primary_key=True, max_length=180, db_index=True)
 	product_des = models.CharField(max_length=1800)
+	topic_distribution = models.TextField(null=True)
 
 # save the lda results
 class Topic(models.Model):
