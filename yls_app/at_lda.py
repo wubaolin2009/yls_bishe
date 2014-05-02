@@ -17,7 +17,7 @@ beta = 0.01
 #beta = 0.5
 # Author Number
 Author_number = 50
-iterations_to_train = 500
+iterations_to_train = 2000
 # where the test set begins and ends
 TEST_BEGIN = 100
 TEST_NUMBER = 10
@@ -69,9 +69,9 @@ def at_lda_inner(K):
         author = entry.user_name
         tokens = entry.tokens
         tokens = filter(lambda k:k in Vset, tokens.split(u' '))
-        if len(tokens) > 400:
+        if len(tokens) > 1500:
             random.shuffle(tokens)
-            tokens = tokens[0:400]
+            tokens = tokens[0:1500]
         tokens = map(V.index,tokens)
 
         all_author_token.append((author,tokens))
@@ -206,6 +206,7 @@ def at_lda_inference(TEST_K):
     # store the author
     Amn = []
     print get_results().keys()
+    
     results = get_results()[TEST_K]
     Kmn = results['Kmn']
     Amn = results['Amn']
@@ -231,7 +232,7 @@ def at_lda_inference(TEST_K):
     nkw = results['nkw']
     na = results['na']
     nk = results['nk']
-    
+
     assert len(all_author_token) == TEST_NUMBER
 
     new_nak = [[0 for m in range(K)] for i in range(Author_number)]
@@ -302,8 +303,10 @@ def at_lda_inference(TEST_K):
     return sita,phi,new_Amn
 
 def calculate_perplexity():
+    print 'llllllllllll'
     perp = {}
-    for TEST_K in [10,20,30,40,50,60,70,80,90,100,110]:
+    for TEST_K in [30]:
+        print 'Calculating perplexity with topic number:', TEST_K
         perp_value = calculate_perplexity_inner(TEST_K)
         perp[TEST_K] = perp_value
     for k in perp.keys():
