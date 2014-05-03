@@ -3,6 +3,7 @@
 # data sources
 from yls_app.models import *
 import numpy
+import math
 import random
 import os
 import run_lda
@@ -541,7 +542,7 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
             goods_html.append(entry.category_name)
 
     if load_from_results == False:
-        new_theta_goods = do_inference(100,new_documents)
+        new_theta_goods = do_inference(2000,new_documents)
         new_theta_goods = [new_theta_goods[k] for k in new_theta_goods.keys()]
         new_theta_goods = [[m[k] for k in m.keys()] for m in new_theta_goods]
         new_theta = new_theta_goods[0]
@@ -549,7 +550,7 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
     else:
         the_results = read_goods_group_topic_results()
         new_documents = [new_documents[0]]
-        new_theta = do_inference(10,new_documents)
+        new_theta = do_inference(100,new_documents)
         new_theta = [new_theta[k] for k in new_theta.keys()]
         new_theta = [[m[k] for k in m.keys()] for m in new_theta]
         new_theta_goods = [(k,the_results[k]) for k in the_results.keys()]
@@ -576,11 +577,42 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
         #print amb/(a_mod*b_mod)
         return amb/(a_mod*b_mod)
 
+    def KL(a,b):
+        assert len(a) == len(b)
+        Dab = 0.5*sum([a[i]*math.log(a[i]/float(b[i]),2) for i in range(len(a))])
+        Dba = 0.5*sum([b[i]*math.log(b[i]/float(a[i]),2) for i in range(len(b))])
+#        return Dab + Dba
+        return sum([(a[i]-b[i])**2 for i in range(len(a))])
+
     def cal_distance(that):
         #print that
         return cos(new_theta,that)
 
+    def cal_distance_KL(that):
+        return KL(new_theta,that)
+
     results = sorted(new_theta_goods, key=lambda k:cal_distance(k[1]),reverse=True)
+    results_KL = sorted(new_theta_goods,key=lambda k:cal_distance_KL(k[1]))
+
+    print ' for review only ===================='
+    temp_original = []
+    temp_KL = []
+    for i in results[0:15]:
+        if i[0] not in [m[0] for m in results_KL[0:15]]:
+            temp_original.append(i[0])
+
+    for i in results_KL[0:15]:
+        if i[0] not in [m[0] for m in results[0:15]]:
+            temp_KL.append(i[0])
+
+    print 'original..........'
+    for i in temp_original:
+        print i
+    print 'KL...............'
+    for i in temp_KL:
+        print i
+    print ' review finishes ===================='
+
     print 'Choosable', len(new_documents)
     for m in results[0:15]:
         print m[0], abs(cos(new_theta,m[1]))
