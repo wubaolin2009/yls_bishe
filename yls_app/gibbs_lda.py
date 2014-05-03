@@ -493,7 +493,35 @@ def save_goods_group_topic_results(result):
     f = open('yls_app/goods_results','w')
     pickle.dump(result,f)
     f.close()
-    
+
+# the wrapper for calculating how much goods category recommended
+def goods_recommend(func):
+    def new_Func(*args, **args2):
+        count = 0
+        goods = {}
+        f = open('yls_app/goods_hit_results','r')
+        goods = pickle.load(f)
+        f.close()
+
+        for i in WeiboUser.objects.all()[220:]:
+            print '==============%d==========='%(count)
+            count += 1
+            try:
+                results = func(args[0],i.name)
+            except Exception:
+                continue
+            for mm in results[1:]:
+                goods[mm[0]] += 1
+
+            f = open('yls_app/goods_hit_results','w')
+            pickle.dump(goods,f)
+            f.close()
+
+        assert False
+        return []
+    return new_Func
+
+#@goods_recommend    
 def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
     # generate the file formats needed by the LDA sampler
     print 'start runing lda gibbs....'

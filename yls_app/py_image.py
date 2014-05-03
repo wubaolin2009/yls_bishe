@@ -83,3 +83,32 @@ def draw_perplexity():
     plt.gca().set_xticks(range(10,120,10))
     plt.show()
 
+
+#this code is used to generate the recommended results' histogram
+import pickle
+f = open('goods_hit_results','r')
+a = pickle.load(f)
+f.close()
+
+m = [a[k] for k in a.keys() if a[k] > 0]
+
+numbins = 20
+
+import matplotlib.pyplot as plt
+
+#xx = range(8)
+
+#result_cos = [213, 41, 21, 16, 3, 17, 5, 14]
+
+
+n, bins, patches = plt.hist(m, numbins , facecolor='green', alpha=0.5)
+
+
+plt.xlabel('Recommended times')
+plt.ylabel('number of goods')
+plt.title("Histogram of Recommendation")
+#plt.gca().set_ylim((0.001,214))
+#plt.gca().set_xticks(['a','b'])
+plt.show()
+
+##############################################
