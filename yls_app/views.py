@@ -13,6 +13,7 @@ from qqweibo_sdk import QQWeiboUtils
 from goods import *
 import HTMLParser
 import at_lda
+import iat_lda
 import matplotlib.pyplot as plt
 import gibbs_lda
 from dangdang_utils import DangDang
@@ -445,3 +446,20 @@ def rec(request):
 		'title': 'Goods Recommended',
 		})
 
+def view_iat_topics(request):
+	result = iat_lda.get_iat_results('yls_app/tools/wbl_80_converted_manual_processed',30,15)
+
+	if result['success'] == 0:
+		return render(request, 'yls_app/show_message.html', {
+		'message' : result['message'],
+		})
+	# we split it to 3 columns
+	return render(request, 'yls_app/show_topics.html', {
+		'which_side_bar_to_select': 1,
+		'qq_status': get_current_qq_status(request),
+		'topics' : (result['topics'][0::3],result['topics'][1::3],result['topics'][2::3])
+		})
+
+def run_iat_lda(request):
+	iat_lda.iat_lda()
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
