@@ -407,7 +407,7 @@ def goodsgroup_process(request):
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
 def view_at_topics(request):
-	result = at_lda.get_at_results('yls_app/tools/wbl_80_converted_manual_processed',30,25)
+	result = at_lda.get_at_results('yls_app/tools/wbl_80_converted_manual_processed',30,15)
 
 	if result['success'] == 0:
 		return render(request, 'yls_app/show_message.html', {

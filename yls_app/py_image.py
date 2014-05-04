@@ -97,13 +97,8 @@ numbins = 20
 import matplotlib.pyplot as plt
 
 #xx = range(8)
-
 #result_cos = [213, 41, 21, 16, 3, 17, 5, 14]
-
-
 n, bins, patches = plt.hist(m, numbins , facecolor='green', alpha=0.5)
-
-
 plt.xlabel('Recommended times')
 plt.ylabel('number of goods')
 plt.title("Histogram of Recommendation")
@@ -112,3 +107,35 @@ plt.title("Histogram of Recommendation")
 plt.show()
 
 ##############################################
+#codes to generate the running time of AT, LDA, and IAT
+import matplotlib.pyplot as plt
+
+K = [30,40,50,60,70]
+
+LDA_ITERATION_TIME = [3.2,4.1,5.7,6.8,7.52]
+AT_ITERATION_TIME = [3.2 * 36, 4.1 * 42, 5.1 * 31, 6.5 * 39, 7.2 * 34]
+IAT_ITERATION_TIME = [3.2*12,4.1*21, 5.1*13, 6.5 * 19.6, 7.2 * 14]
+
+LDA_ITERATION_TIME = map(lambda k:k*2000, LDA_ITERATION_TIME)
+AT_ITERATION_TIME = map(lambda k:k*2000, AT_ITERATION_TIME)
+IAT_ITERATION_TIME = map(lambda k:k*2000, IAT_ITERATION_TIME)
+
+label1,label2,label3 = plt.plot(K,LDA_ITERATION_TIME ,'r.-', K,AT_ITERATION_TIME,'g-.',K,IAT_ITERATION_TIME, 'b*-')
+label1.set_label('LDA')
+label2.set_label('AT')
+label3.set_label('IAT')
+
+plt.legend(loc='lower center',shadow=True)
+plt.xlabel('Topic Number')
+plt.ylabel('Finish Time(s)')
+plt.title("Topic Model Perplexity: Iteration 2000,Author Number 40")
+#plt.gca().set_ylim((1500,3100))
+#plt.gca().set_xticks(range(10,120,10))
+plt.yscale('log')
+plt.show()
+
+
+############################################
+# codes to draw statisfactory image of Topic extraction
+LDA = [5,4,2,2,3,2,3,4,3,3,2,3,5,5,2,5,3,1,1,5,4,2,2,3,5,3,3,1,2,4]
+AT = [

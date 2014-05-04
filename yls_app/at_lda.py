@@ -10,14 +10,14 @@ import bisect
 import time
 import pickle
 # parameters for AT-LDA
-K = 30
+K = 20
 alpha = 50.0/K
 beta = 0.01
-#alpha = 2.0
-#beta = 0.5
+alpha = 2.0
+beta = 0.5
 # Author Number
 Author_number = 50
-iterations_to_train = 2000
+iterations_to_train = 1500
 # where the test set begins and ends
 TEST_BEGIN = 100
 TEST_NUMBER = 10
@@ -55,7 +55,7 @@ def at_lda():
     for K in [30]:
         print 'KKKKKKKKKKKKKKKKKKKKKKK',K
         at_lda_inner(K)
-    calculate_perplexity()
+    #calculate_perplexity()
 
 def at_lda_inner(K):
     all_author_token = []
@@ -69,9 +69,9 @@ def at_lda_inner(K):
         author = entry.user_name
         tokens = entry.tokens
         tokens = filter(lambda k:k in Vset, tokens.split(u' '))
-        if len(tokens) > 1500:
-            random.shuffle(tokens)
-            tokens = tokens[0:1500]
+        #if len(tokens) > 1500:
+        #    random.shuffle(tokens)
+        #    tokens = tokens[0:1500]
         tokens = map(V.index,tokens)
 
         all_author_token.append((author,tokens))
@@ -94,6 +94,7 @@ def at_lda_inner(K):
         for n in range(len(Kmn[m])):
             Kmn[m][n] = random.randint(0,K-1)
             Amn[m][n] = random.randint(0,len(all_authors)-1)
+            Amn[m][n] = m
 
     nak = [[0 for m in range(K)] for i in range(len(all_authors))]
     nkw = [[0 for w in range(len(V))] for i in range(K)]
@@ -118,14 +119,19 @@ def at_lda_inner(K):
             return back  
         return newFunc
 
-    def sample_k_a(w):
-        LENA = len(all_authors)
+    def sample_k_a(m,w):
+#        LENA = len(all_authors)
+        # IMPORTANT　FIX:
+        # When Sampling from Authors, it's not meaning sampling from all authors
+        # but the author of this document
+        LENA = 1
         p = [0] * (LENA*K)
         for k in range(K):
             pre = (nkw[k][w] + beta)/float(nk[k]+len(V)*beta)
             for a in range(LENA):
                 index = k*LENA + a
-                p[index] = (nak[a][k]+alpha)/(na[a]+K*alpha) * pre
+                #IMPORTANT CHANGE: Fix uncorrect implementaion of AT
+                p[index] = float(nak[m][k]+alpha)/(na[m]+K*alpha) * pre
                 assert nkw[k][w] >= 0
                 assert nk[k] >= 0
                 assert nak[a][k] >= 0
@@ -134,7 +140,8 @@ def at_lda_inner(K):
         weighted_sum = [0 for _ in range(K*LENA+1)]
         weighted_sum[0] = p[0]
         for i in range(1,len(p)):
-            weighted_sum[i] = weighted_sum[i-1] + p[index]
+        # Fix for the uncorrect implementation
+            weighted_sum[i] = weighted_sum[i-1] + p[i]
         weighted_sum[len(p)] = weighted_sum[len(p)-1]
 
         selected_index = -1
@@ -163,26 +170,28 @@ def at_lda_inner(K):
                 assert na[a] >= 0
 
                 #sample new topic k, and author a
-                new_k,new_a = sample_k_a(w)
+                new_k,new_a = sample_k_a(m,w)
+                # IMPORTANT　FIX: new_a is not sampled, it's the old a
+                new_a = m
                 #new_k,new_a = 1,1
                 Kmn[m][w_index] = new_k
                 Amn[m][w_index] = new_a
                 #update nak, na, nkw,nk
                 nak[new_a][new_k],na[new_a],nkw[new_k][w],nk[new_k] = nak[new_a][new_k]+1,na[new_a]+1,nkw[new_k][w]+1,nk[new_k]+1
 
-        #cal sita
-        sita = [[0 for _ in range(K)] for _ in range(len(all_authors))]
-        for a in range(len(all_authors)):
-            for k in range(K):
-                sita[a][k] = (nak[a][k] + alpha) / (K * alpha + na[a])
-        
-        #cal phi
-        phi = [[0 for _ in range(len(V))] for _ in range(K)]
+    #cal sita
+    sita = [[0 for _ in range(K)] for _ in range(len(all_authors))]
+    for a in range(len(all_authors)):
         for k in range(K):
-            for t in range(len(V)):
-                phi[k][t] = (nkw[k][t] + beta) / (len(V)*beta + nk[k])
+            sita[a][k] = (nak[a][k] + alpha) / (K * alpha + na[a])
+        
+    #cal phi
+    phi = [[0 for _ in range(len(V))] for _ in range(K)]
+    for k in range(K):
+        for t in range(len(V)):
+            phi[k][t] = (nkw[k][t] + beta) / (len(V)*beta + nk[k])
 
-        save_results(K,Kmn,Amn,phi,sita,nak,nkw,na,nk)
+    save_results(K,Kmn,Amn,phi,sita,nak,nkw,na,nk)
 
 def at_lda_inference(TEST_K):
     K = TEST_K
@@ -250,6 +259,7 @@ def at_lda_inference(TEST_K):
 
     def sample_k_a_infer(w):
         LENA = len(all_author_token)
+        LENA = 1
         p = [0] * (LENA*K)
         for k in range(K):
             pre = (new_nkw[k][w] + nkw[k][w] + beta)/float(new_nk[k] + nk[k]+len(V)*beta)
@@ -280,6 +290,7 @@ def at_lda_inference(TEST_K):
                 new_nak[a][k],new_na[a],new_nkw[k][w],new_nk[k] = new_nak[a][k]-1,new_na[a]-1,new_nkw[k][w]-1,new_nk[k]-1
                 #sample new topic k, and author a
                 new_k,new_a = sample_k_a_infer(w)
+                new_a = a
                 #new_k,new_a = 1,1
                 new_Kmn[m][w_index] = new_k
                 new_Amn[m][w_index] = new_a
