@@ -84,6 +84,51 @@ def draw_perplexity():
     plt.show()
 
 
+def draw_score_topic():
+xx = [10,20,30,40,50]
+
+perplextity_lda = [0.42,0.41,0.33,0.32,0.31]
+
+perplexity_at = [0.56,0.67,0.60, 0.81, 0.68]
+ 
+perplexity_iat = [0.61,0.71, 0.52, 0.83, 0.62]
+
+label1,label2,label3 = plt.plot(xx,perplextity_lda ,'r.-', xx,perplexity_at,'g-.',xx,perplexity_iat, 'b*-')
+label1.set_label('LDA')
+label2.set_label('AT')
+label3.set_label('IAT')
+
+plt.legend(loc='upper left',shadow=True)
+plt.xlabel('Topic Number')
+plt.ylabel('Score')
+plt.title("Topic Model Score")
+plt.gca().set_ylim((0.2,1.0))
+plt.gca().set_xticks(range(10,60,10))
+plt.show()
+
+def draw_score_topic_rec_cos_lda_at_iat():
+xx = range(20)
+result_cos = [179,50,172,265,142,250,117,86,165,75,163,234,139,61,78,177,215,91,102,168]
+result_cos = map(lambda k:k/75.0, result_cos) 
+perplextity_lda = [80,40,110,137,133,107,135,78,121,112,132,137,62,85,71,121,39,56,110,49]
+perplextity_lda = map(lambda k:k/75.0, perplextity_lda)
+perplexity_at = [139,121,158, 167,117,193,165,126,79,95,89,150,150,145,60,149,137,127,147, 121]
+perplexity_at = map(lambda k:k/75.0, perplexity_at)
+perplexity_iat = result_cos
+
+label1,label2,label3 = plt.plot(xx,perplextity_lda ,'r.-', xx,perplexity_at,'g-.',xx,perplexity_iat, 'b*-')
+label1.set_label('LDA')
+label2.set_label('AT')
+label3.set_label('IAT')
+
+plt.legend(loc='upper left',shadow=True)
+plt.xlabel('Weibo User Index')
+plt.ylabel('Score')
+plt.title("Recommendation Score")
+plt.gca().set_ylim((0.2,4.0))
+plt.gca().set_xticks(range(0,21))
+plt.show()
+
 #this code is used to generate the recommended results' histogram
 import pickle
 f = open('goods_hit_results','r')
@@ -110,7 +155,7 @@ plt.show()
 #codes to generate the running time of AT, LDA, and IAT
 import matplotlib.pyplot as plt
 
-K = [30,40,50,60,70]
+K = 
 
 LDA_ITERATION_TIME = [3.2,4.1,5.7,6.8,7.52]
 AT_ITERATION_TIME = [3.2 * 36, 4.1 * 42, 5.1 * 31, 6.5 * 39, 7.2 * 34]

@@ -371,6 +371,20 @@ def get_at_results(vocab_file, topic_numbers, word_in_topic):
     K = topic_numbers
     V = run_lda.read_vocab(vocab_file)
     phi = get_results()[K]['phi']
+    theta = get_results()[K]['theta']
+
+    # calculate the most hot topic
+    hot_topic = [0] *K
+    for doc in theta:
+        topic_dist = doc
+        temp_hot_topic = [hot_topic[i] + topic_dist[i] for i in range(len(hot_topic))]
+    hot_topic = temp_hot_topic
+    hot_topic = [float(k)/sum(hot_topic) for k in hot_topic]
+    hot_topic = zip(range(K),hot_topic)
+    hot_topic.sort(key=lambda k:k[1],reverse=True)
+    print 'HOTTOPICS------------------'
+    for topic in hot_topic:
+        print topic[0], topic[1]
 
     for k in range(0, topic_numbers):
         this_topic = []

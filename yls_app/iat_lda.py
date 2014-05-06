@@ -19,7 +19,7 @@ alpha = 2.0
 beta = 0.5
 # Author Number
 Author_number = 50
-iterations_to_train = 30
+iterations_to_train = 1000
 # where the test set begins and ends
 TEST_BEGIN = 100
 TEST_NUMBER = 10
@@ -65,6 +65,13 @@ def get_users_cared_by(user_name):
     a = [entry.idol_name.name for entry in UserIdolList.objects.filter(name=user_name)]
     return a
 
+def get_author_indexes(authors, user_name):
+    a = [entry.idol_name.name for entry in UserIdolList.objects.filter(name=user_name)]
+    a = [authors.index(m) for m in a if m in authors]
+    authos = [authors.index(user_name)] + a
+    #print '---',len(authos)
+    return authos
+
 # get the tokens acooding to some weighted value
 def get_tokens_weighted(user_name,user_tweet_tokens_num):
     # calculate the number needed to extract from followees
@@ -105,7 +112,7 @@ def iat_lda_inner(K):
         tokens = tokens + temp
         tokens = filter(lambda k:k in Vset, tokens.split(u' '))
         tokens = map(V.index,tokens)
-        print len(tokens)
+        #print len(tokens)
         #assert False
         all_author_token.append((author,tokens))
 
@@ -124,10 +131,12 @@ def iat_lda_inner(K):
         
     #Init All K and A randomly
     for m in range(len(Kmn)):
+        available_authors = get_author_indexes(all_authors,all_authors[m])
         for n in range(len(Kmn[m])):
             Kmn[m][n] = random.randint(0,K-1)
             Amn[m][n] = random.randint(0,len(all_authors)-1)
-            Amn[m][n] = m
+            index_random = random.randint(0,len(available_authors)-1)
+            Amn[m][n] = index_random
 
     nak = [[0 for m in range(K)] for i in range(len(all_authors))]
     nkw = [[0 for w in range(len(V))] for i in range(K)]
@@ -142,8 +151,9 @@ def iat_lda_inner(K):
     na = [cal_na(nak,a) for a in range(len(all_authors))]
     nk = [cal_nk(nkw,k) for k in range(K)]
 
-    def sample_k_a(m,w):
-        LENA = 1
+    def sample_k_a(m,w,available_authors):
+        LENA = len(available_authors)
+        #LENA = 1
         p = [0] * (LENA*K)
         for k in range(K):
             pre = (nkw[k][w] + beta)/float(nk[k]+len(V)*beta)
@@ -154,6 +164,7 @@ def iat_lda_inner(K):
                 assert nk[k] >= 0
                 assert nak[a][k] >= 0
                 assert na[a] >= 0
+        #print 'sampleing'
 
         weighted_sum = [0 for _ in range(K*LENA+1)]
         weighted_sum[0] = p[0]
@@ -170,9 +181,12 @@ def iat_lda_inner(K):
 
         assert selected_index != -1
 
-        return (selected_index / LENA, selected_index % LENA)
+        new_k,new_a = (selected_index / LENA, selected_index % LENA)
+        new_a = available_authors[new_a]
+        return new_k,new_a
 
     iterations = iterations_to_train
+    available_authors = [get_author_indexes(all_authors,all_authors[m]) for m in range(len(Kmn))]
     for iteration in range(0,iterations):
         print 'iteration %d'%(iteration),time.ctime()
         for m in range(len(Kmn)):
@@ -186,9 +200,9 @@ def iat_lda_inner(K):
                 assert na[a] >= 0
 
                 #sample new topic k, and author a
-                new_k,new_a = sample_k_a(m,w)
+                new_k,new_a = sample_k_a(m,w,available_authors[m])
                 # IMPORTANT　FIX: new_a is not sampled, it's the old a
-                new_a = m
+                #new_a = m
                 #new_k,new_a = 1,1
                 Kmn[m][w_index] = new_k
                 Amn[m][w_index] = new_a

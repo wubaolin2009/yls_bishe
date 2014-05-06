@@ -320,10 +320,11 @@ def run_lda_gibbs(meaningful_words_path,K, iterations,alpha=2,beta=0.5):
     print 'start runing lda gibbs....'
     V = run_lda.read_vocab(meaningful_words_path)
     Vset = set(V)
-    iterations = 100
-    K = 10
+    iterations = 500
+    K = 50
     documents = []
     for entry in TweetUserToken.objects.all()[0:50]:
+#    for entry in TweetToken.objects.all()[0:10000]:
         tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
         this_doct = map(lambda k:V.index(k), tokens)
         assert all(map(lambda k:k != -1,this_doct))
@@ -334,10 +335,10 @@ def run_lda_gibbs(meaningful_words_path,K, iterations,alpha=2,beta=0.5):
         documents.append(this_doct)
     fommm = map(len,documents)
     fommm.sort()
-    print fommm[0], fommm[-1]
+    #print fommm[0], fommm[-1]
 
     print 'Documents readed %d'%(len(documents))
-    for K in [20]:
+    for K in [30]:
         lda = LdaGibbsSampler(documents, K, len(V))
         lda.configure(iterations,2000,20)
         lda.gibbs(alpha,beta)
@@ -349,6 +350,17 @@ def run_lda_gibbs(meaningful_words_path,K, iterations,alpha=2,beta=0.5):
         # phi is in the formate of
         # {topicid: {word0:prob, ... , word0:}}
         save_to_file(K,iterations,phi,theta,lda.z)
+        # calculate the most hot topic
+        hot_topic = [0] *K
+        for doc in phi.keys():
+            topic_dist = [phi[doc][k] for k in phi[doc].keys()]
+            hot_topic = [hot_topic[i] + topic_dist[i] for i in range(len(hot_topic))]
+        hot_topic = [float(k)/sum(hot_topic) for k in hot_topic]
+        hot_topic = zip(range(K),hot_topic)
+        hot_topic.sort(key=lambda k:k[1],reverse=True)
+        print 'HOTTOPICS------------------'
+        for topic in hot_topic:
+            print topic[0], topic[1]
 
 def save_to_file(K,iterations,phi,theta,z):
     ''' results = {(K,iterations):{phi,theta,z}} } '''
