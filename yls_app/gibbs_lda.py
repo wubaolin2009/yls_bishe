@@ -46,8 +46,9 @@ class LdaGibbsSampler:
 
     def prepare_new_inference(self,docs_new,K,iterations):
         ''' load the neccesary z '''
+        print 'WWWWWW',K
         results = read_results()
-
+        print 'WWWWWWWW',results.keys()
         assert K in results.keys(),'The K %d not been calculated!'%(K,iterations)
         self.z = results[K]['z']
         self.new_M = len(docs_new)
@@ -321,7 +322,7 @@ def run_lda_gibbs(meaningful_words_path,K, iterations,alpha=2,beta=0.5):
     V = run_lda.read_vocab(meaningful_words_path)
     Vset = set(V)
     iterations = 500
-    K = 50
+    K = 30
     documents = []
     for entry in TweetUserToken.objects.all()[0:50]:
 #    for entry in TweetToken.objects.all()[0:10000]:
@@ -539,7 +540,7 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
     print 'start runing lda gibbs....'
     V = run_lda.read_vocab(meaningful_words_path)
     Vset = set(V)
-    iterations = 100
+    iterations = 50
     K = 40
     new_documents = []
     documents = []
@@ -665,3 +666,30 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
         count += 1
     
     return ret_results
+
+def goods_rec(meaningful_words_path,user,number_goods = 20):
+    results = recommend(meaningful_words_path,user)
+    results = results[1:]
+    weighteds = [m[3] for m in results]
+    numbers = [float(number_goods)*weighteds[i]/sum(weighteds) for i in range(len(weighteds))]
+    numbers = [int(i+1) for i in numbers]
+#    print 'Numbers',numbers
+    def choose_from_category(cat,numbers):
+        w = []
+#        print 'Cat',cat
+        assert numbers > 0
+        for m in GoodsProcessed.objects.filter(product_category=cat):
+            w.append(m.product_html)
+        random.shuffle(w)
+        return w[0:numbers]
+        
+    ret = []
+    for i in range(len(numbers)):
+#        print results[i],'---'
+        for i in choose_from_category(results[i][0],numbers[i]):
+            ret.append(i)
+    print ret
+    return ret
+        
+        
+    

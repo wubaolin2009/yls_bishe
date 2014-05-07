@@ -380,7 +380,7 @@ def view_weibo_by_user(request):
 		'param1_value': user_name,
 	}
 
-        param['subtitle'] = u'<a href="%s">%s</a>'%('/yls_app/rec?user='+user_name, u'Recommend')
+        param['subtitle'] = u'<a href="%s">%s</a>'%('/yls_app/rec?user='+user_name, u'Recommend_Cat') + u'<a href="%s">%s</a>'%('/yls_app/goods_rec?user='+user_name, u'Recommend_Good')
         param['page_url'] = '/yls_app/view_weibo_by_user?rec=1'
 
 	return render(request, 'yls_app/general_view.html',param)
@@ -443,6 +443,38 @@ def rec(request):
 		'user_topic': results[0],
 		'goods': results[1:],
 		'img_temp': "goods_1.png",
+		'title': 'Goods Recommended',
+		})
+
+def goods_rec(request):
+	''' the most import function in this project, to reccomend specific goods to a user instead of goods category'''
+	user = request.GET['user']
+	results = gibbs_lda.goods_rec('yls_app/tools/wbl_80_converted_manual_processed',user)
+#	results = [[0.3,0.3,0.1,0.22,0.11],[u'WaWa', [0.1,0.1,0.2,0.2,0.4], 0.12 ]]
+
+	# make the temperary image @ yls_app/goods_%d.png
+#	xx = range(len(results[1][1]))
+#	for i in range(1,len(results)):
+#            user,goods = plt.plot(xx,results[0],'r.-',xx, results[i][1],'g.-')
+#	    user.set_label("user")
+#	    goods.set_label("Goods")
+#	    plt.legend(loc='upper right', shadow=True)
+#	    plt.savefig('yls_app/static/yls_app/temp_img_results/goods_%d.png'%(i) )
+#	    plt.clf()
+	# Paramters to input
+	# [[product_title, product_image,product_category],[]]
+	result_to_in = []
+	for r in results:
+            g = Goods.objects.get(product_html=r)
+	    product_title,product_image,product_cat = g.product_name,g.product_image_url,g.product_category
+            result_to_in.append([product_title,product_image,product_cat,g.product_html])
+
+	print result_to_in
+	
+	return render(request, 'yls_app/rec_the_good.html', {
+		'which_side_bar_to_select': 1,
+		'qq_status': get_current_qq_status(request),
+		'goods': result_to_in,
 		'title': 'Goods Recommended',
 		})
 
