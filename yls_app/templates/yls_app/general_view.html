@@ -55,6 +55,9 @@
 
 <script type="text/javascript">
 function add_preview() {
+  if($('a[id^=\'preview_img_\']').length == 0){
+    return;
+  }
   $('a[id^=\'preview_img_\']').imgPreview({
     containerID: 'imgPreviewWithStyles',
     imgCSS: {

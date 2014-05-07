@@ -341,7 +341,7 @@ def view_weibouser(request):
 		'page_url':'/yls_app/view_weibouser',
 	}
 	if recommended == 1:
-	    param['subtitle'] = 'Choose the user to reccommend goods'
+	    param['subtitle'] = '选择用户进行商品推荐'
 	return render(request, 'yls_app/general_view.html',param)
 
 def view_weibo_by_user(request):
@@ -380,7 +380,7 @@ def view_weibo_by_user(request):
 		'param1_value': user_name,
 	}
 
-        param['subtitle'] = u'<a href="%s">%s</a>'%('/yls_app/rec?user='+user_name, u'Recommend_Cat') + u'<a href="%s">%s</a>'%('/yls_app/goods_rec?user='+user_name, u'Recommend_Good')
+        param['subtitle'] = u'<a href="%s">%s</a>'%('/yls_app/rec?user='+user_name, u'商品类别  ') + u'<a href="%s">%s</a>'%('/yls_app/goods_rec?user='+user_name, u'  推荐商品')
         param['page_url'] = '/yls_app/view_weibo_by_user?rec=1'
 
 	return render(request, 'yls_app/general_view.html',param)
@@ -443,7 +443,7 @@ def rec(request):
 		'user_topic': results[0],
 		'goods': results[1:],
 		'img_temp': "goods_1.png",
-		'title': 'Goods Recommended',
+		'title': '推荐的商品类别',
 		})
 
 def goods_rec(request):
@@ -475,7 +475,7 @@ def goods_rec(request):
 		'which_side_bar_to_select': 1,
 		'qq_status': get_current_qq_status(request),
 		'goods': result_to_in,
-		'title': 'Goods Recommended',
+		'title': '推荐的商品',
 		})
 
 def view_iat_topics(request):
