@@ -423,6 +423,7 @@ def view_at_topics(request):
 def rec(request):
 	''' the most import function in this project, to reccomend goods to a user'''
 	user = request.GET['user']
+#	results = gibbs_lda.recommend_the_good_save_results('yls_app/tools/wbl_80_converted_manual_processed',user)
 	results = gibbs_lda.recommend('yls_app/tools/wbl_80_converted_manual_processed',user)
 #	results = [[0.3,0.3,0.1,0.22,0.11],[u'WaWa', [0.1,0.1,0.2,0.2,0.4], 0.12 ]]
 

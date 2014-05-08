@@ -514,6 +514,20 @@ def save_goods_group_topic_results(result):
     pickle.dump(result,f)
     f.close()
 
+def read_single_good_topic_results():
+    if os.path.exists('yls_app/the_good_results') == False:
+        return {}
+    f = open('yls_app/the_good_results','r')
+    results = pickle.load(f)
+    f.close()
+    return results
+
+def save_single_good_topic_results(result):
+    f = open('yls_app/the_good_results','w')
+    pickle.dump(result,f)
+    f.close()
+
+
 # the wrapper for calculating how much goods category recommended
 def goods_recommend(func):
     def new_Func(*args, **args2):
@@ -562,6 +576,7 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
         assert all(map(lambda k:k != -1,this_doct))
         new_documents.append(this_doct)
     new_documents = [new_documents[0]]
+
     # read old data
     for entry in TweetUserToken.objects.all()[0:50]:
         tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
@@ -674,7 +689,126 @@ def recommend(meaningful_words_path,user,alpha=2,beta=0.5):
     
     return ret_results
 
+def recommend_the_good_save_results(meaningful_words_path,user,cats_goods,weights_goods,alpha=2,beta=0.5):
+    # generate the file formats needed by the LDA sampler
+    print 'start runing lda gibbs....'
+    V = run_lda.read_vocab(meaningful_words_path)
+    Vset = set(V)
+    iterations = 50
+    K = 40
+    new_documents = []
+    documents = []
+    results = read_single_good_topic_results()
+    new_documents = []
+    save_results = True
+
+    # read the tweets of this user
+    for entry in TweetUserToken.objects.filter(user_name=user):
+        tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
+        this_doct = map(lambda k:V.index(k), tokens)
+        assert all(map(lambda k:k != -1,this_doct))
+        new_documents.append(this_doct)
+    new_documents = [new_documents[0]]
+
+    # read old data
+    for entry in TweetUserToken.objects.all()[0:50]:
+        tokens = filter(lambda k:k in Vset, entry.tokens.split(u' '))
+        this_doct = map(lambda k:V.index(k), tokens)
+        if len(this_doct) > 1500:
+            random.shuffle(this_doct)
+            this_doct = this_doct[0:1500]
+        assert all(map(lambda k:k != -1,this_doct))
+        documents.append(this_doct)
+ 
+    def do_inference(iterations,new):
+        lda = LdaGibbsSampler(documents,K,len(V))
+        lda.configure(iterations,2000,20)
+        lda.prepare_new_inference(new,K,iterations)
+        lda.gibbs_inferecne(alpha,beta,iterations)
+        return lda.get_new_theta()
+
+    goods_html = []
+    for entry in GoodsProcessed.objects.all().iterator():
+        tokens = filter(lambda k:k in Vset, entry.product_des.split(u' '))
+        this_doct = map(lambda k:V.index(k), tokens)
+        assert all(map(lambda k:k != -1,this_doct))
+        if len(tokens) > 3:
+            new_documents.append(this_doct)
+            #print this_doct
+            goods_html.append((entry.product_html,entry.product_category))
+
+    if save_results == True:
+        new_theta_goods = do_inference(2000,new_documents)
+        new_theta_goods = [new_theta_goods[k] for k in new_theta_goods.keys()]
+        new_theta_goods = [[m[k] for k in m.keys()] for m in new_theta_goods]
+        new_theta = new_theta_goods[0]
+        new_theta_goods = new_theta_goods[1:]
+        for i in range(len(goods_html)):
+            results[goods_html[i]] = new_theta_goods[i]
+        save_single_good_topic_results(results)
+        new_theta_goods = zip(goods_html,new_theta_goods)
+    else:
+        the_results = read_single_good_topic_results()
+        new_documents = [new_documents[0]]
+        new_theta = do_inference(100,new_documents)
+        new_theta = [new_theta[k] for k in new_theta.keys()]
+        new_theta = [[m[k] for k in m.keys()] for m in new_theta]
+        new_theta_goods = [(k,the_results[k]) for k in the_results.keys()]
+        #print new_theta_goods
+        new_theta = new_theta[0]
+
+    def KL(a,b):
+        assert len(a) == len(b)
+        Dab = 0.5*sum([a[i]*math.log(a[i]/float(b[i]),2) for i in range(len(a))])
+        Dba = 0.5*sum([b[i]*math.log(b[i]/float(a[i]),2) for i in range(len(b))])
+#        return Dab + Dba
+        return sum([(a[i]-b[i])**2 for i in range(len(a))])
+
+    def cal_distance_KL(that):
+        return KL(new_theta,that)
+    #print new_theta_goods
+    results = sorted(new_theta_goods,key=lambda k:cal_distance_KL(k[1]))
+#ret_results = {'cats':[product_html,product_html]}
+    ret_results = {}
+    for cat_to_rec,weight_to_rec in zip(cats_goods,weights_goods):
+        the_res = [m for m in results if m[0][1] == cat_to_rec]
+        the_res = the_res[0:weight_to_rec]
+        ret_results[cat_to_rec] = the_res
+    
+    print 'Choosable', len(new_documents)
+    for m in results[0:15]:
+        print m[0], abs(KL(new_theta,m[1]))
+    # {user:new_theta, goods:[[m[1], cos]]}
+    to_ret = []
+    for k in ret_results.keys():
+        temp = ret_results[k]
+        for tt in temp:
+            to_ret.append(tt[0][0])
+    print '-------------'
+    for mm in to_ret:
+        print mm
+    return to_ret
+
 def goods_rec(meaningful_words_path,user,number_goods = 20):
+    results = recommend(meaningful_words_path,user)
+    results = results[1:]
+    weighteds = [m[3] for m in results]
+    numbers = [float(number_goods)*weighteds[i]/sum(weighteds) for i in range(len(weighteds))]
+    numbers = [int(i+1) for i in numbers]
+    ret = []
+
+    categories = [results[i][0] for i in range(len(numbers))]
+
+    assert len(categories) == len(numbers)
+
+    ret = recommend_the_good_save_results(meaningful_words_path,user,categories,numbers)
+
+    print ret
+    return ret
+    
+
+# random recommend
+def goods_rec_random(meaningful_words_path,user,number_goods = 20):
     results = recommend(meaningful_words_path,user)
     results = results[1:]
     weighteds = [m[3] for m in results]
