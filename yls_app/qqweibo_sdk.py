@@ -13,6 +13,7 @@ import requests
 import Queue
 from yls_app.models import *
 import chardet
+import thread
 
 class ClientError(Exception):
     pass
@@ -212,13 +213,21 @@ class QQWeiboUtils(object):
         my_name = QQWeiboUtils.get_current_userinfo(client, access_token)
         my_name = QQWeiboUtils.get_user_model(my_name)
         my_name.save()
+        t = Task.create_new_fetch_relation_task()
+        t.status = Task.TASK_STATUS_STARTED
+        t.save()
 
         q = Queue.Queue()
         q.put(my_name)
         while not q.empty():
             user = q.get()
             print 'processing user:', user.name
+            t.info = 'processing user:%s'%(user.name)
+            t.save()
             all_that = []
+            # For demo use
+            if not WeiboUser.objects.filter(name=user.name).exists():
+                continue
             if not UserIdolList.objects.filter(name=user.name):
                 all_that = QQWeiboUtils.get_all_idollist_of(client, user)
                 print 'Got number of friends:' + str(len(all_that))
@@ -227,13 +236,18 @@ class QQWeiboUtils(object):
                     if not WeiboUser.objects.filter(name=one_friend.name):
                         #print 'save', one_friend.nick
                         #print chardet.detect(one_friend.nick)
-                        one_friend.save()
+                        # For demo isuue, don't save it
+                        ##one_friend.save()
+                        pass
                 # Save all the relationships
                 for one_friend in all_that:
                     if not (UserIdolList.objects.filter(name=user).filter(idol_name=one_friend.name)):
                         l = UserIdolList()
                         l.name = user
-                        l.idol_name = WeiboUser.objects.filter(name=one_friend.name)[0]
+                        try:
+                            l.idol_name = WeiboUser.objects.filter(name=one_friend.name)[0]
+                        except Exception:
+                            continue
                         print 'IDOL_NAME', l.idol_name.name, '---', one_friend.name
                         l.save()
             else:
@@ -247,14 +261,23 @@ class QQWeiboUtils(object):
                      if not UserIdolList.objects.filter(name=a_user.name) and len(a_user.name) > 0:
                         q.put(a_user)
                         break
+            Task.finish_task(t,success=True)
+
+
+
     @staticmethod
-    def start_fetch_weibos(client, access_token):
+    def start_fetch_weibos_inner(client, access_token):
         count = 0
         client.set_access_token(access_token)
+        t = Task.create_new_fetch_weibo_task()
+        t.status = Task.TASK_STATUS_STARTED
+        t.save()
         for user in WeiboUser.objects.all():
             #print count, '----processing', user.name
             count += 1
             if count % 500 == 0:
+                t.info = 'processsing %d'%(count)
+                t.save()
                 print '----processing', count
             try:
                 if Tweet.objects.filter(name=user.name).exists():
@@ -269,7 +292,8 @@ class QQWeiboUtils(object):
                     weibo.save()
                 except Exception, e:
                     print e, 'Save Failed!'
+        Task.finish_task(t,success=True)
 
-
-        
-        
+    @staticmethod
+    def start_fetch_weibos(client,access_token):
+        thread.start_new(QQWeiboUtils.start_fetch_weibos_inner,(client,access_token))

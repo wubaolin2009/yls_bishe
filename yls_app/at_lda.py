@@ -62,6 +62,9 @@ def at_lda_inner(K):
     # get the vocabulary file
     V = run_lda.read_vocab('yls_app/tools/wbl_80_converted_manual_processed')
     Vset = set(V)
+    t = Task.create_new_at_task()
+    t.status = Task.TASK_STATUS_STARTED
+    t.save()
 
     # Read all authors and their tokens
     print 'load all the tokens'
@@ -156,6 +159,8 @@ def at_lda_inner(K):
 
     iterations = iterations_to_train
     for iteration in range(0,iterations):
+        t.info = 'processing iteration %d'%(iteration)
+        t.save()
         print 'iteration %d'%(iteration),time.ctime()
         for m in range(len(Kmn)):
             #print 'processing doc %d tokens %d'%(m,len(all_author_token[m][1]))
@@ -191,7 +196,8 @@ def at_lda_inner(K):
         for t in range(len(V)):
             phi[k][t] = (nkw[k][t] + beta) / (len(V)*beta + nk[k])
 
-    save_results(K,Kmn,Amn,phi,sita,nak,nkw,na,nk)
+#    save_results(K,Kmn,Amn,phi,sita,nak,nkw,na,nk)
+    Task.finish_task(t,success=True)
 
 def at_lda_inference(TEST_K):
     K = TEST_K

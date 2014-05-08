@@ -37,11 +37,15 @@ class Cutter(object):
         count = 0
         print 'start cut_no_group......'
         fake = range(0,Tweet.objects.all().count(),100)
+        tas = Task.create_new_cut_task()
+        tas.status = Task.TASK_STATUS_STARTED
+        tas.save()
 
         for start in fake:
             count = 0
             for weibo in Tweet.objects.all()[start:start+100]:
-                #print 'processing weibo ', weibo.tweet_id
+                tas.info = 'processing weibo ' + weibo.tweet_id
+                tas.save()
                 count += 1
                 if (start + count) % 1000 == 0:
                     print 'Cutted', start + count, (start+count) / 51000.0
@@ -58,10 +62,12 @@ class Cutter(object):
                 for m in seg_list:
                     if g_filter.valid(m) and g_filter2.valid(m):
                    	    final_results.append(m)
-                token  = TweetToken()
+                token = TweetToken()
                 token.tweet = weibo.tweet_id
                 token.tokens = ' '.join(final_results)
                 token.save()
+        Task.finish_task(tas,success=True)
+
 #    except Exception,e:
 #           print 'Exception in cut_no_group 2nd',e
 #           return
@@ -73,10 +79,10 @@ class Cutter(object):
         if group_by_user == False:
             return Cutter.cut_no_group()
         t = Task.create_new_cut_task()
-        g_filter = FilterMeaningless()
-        g_filter2 = FilterNoCharacter()
         t.status = Task.TASK_STATUS_STARTED
         t.save()
+        g_filter = FilterMeaningless()
+        g_filter2 = FilterNoCharacter()
         count = 0
         target = AjaxHandler.get_weibos_count()
         try:
@@ -122,8 +128,9 @@ class Cutter(object):
 
     @staticmethod
     def start_cut():
-        ''' start the thread of cutting '''
+        ''' start the thread of ing '''
         thread.start_new(Cutter.cut, ())
+#        Cutter.cut()
 
 # 主要用于得到当前一些job的状态
 class AjaxHandler(object):
@@ -150,6 +157,9 @@ class AjaxHandler(object):
 	@staticmethod
 	def get_tasks(task_type):
 		task_lists = Task.objects.all().order_by('-start_time')
+#                print 'fffffffffffffffffffff'
+#                for m in task_lists:
+#                    print m.start_time
 		return task_lists
 
 	@staticmethod
@@ -317,5 +327,8 @@ class LDAHandler(object):
     
         @staticmethod
         def find_goods():
-            DangDang.find_goods(DangDang.get_start_htmls[0]) 
+            try:
+                DangDang.find_goods(DangDang.get_start_htmls()[0]) 
+            except:
+                pass
 

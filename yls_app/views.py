@@ -160,25 +160,23 @@ def convert_to_final_dict(request):
 
 def get_tasks(request):
 	task_type = [t[0] for t in Task.TYPE_CHOICES]
+	print 'wwwwwwwww',task_type
 	if 'task_type'  in request.GET.keys():
 		if request.GET['task_type'] not in task_type:
 			raise Http404
 		task_type = [request.GET['task_type']]
 	return_result = []
-	for i in task_type:		
-		task_lists = AjaxHandler.get_tasks(i)		
-		for t in task_lists:
-			if t.task_type != i:
-				continue
-			t_type = t.task_type.replace('TYPE_','')
-			t_status = t.task_status.replace('STATUS_', '')
-			t_start = str(t.start_time)
-			if len(t_start.split('.')) > 1:
-				t_start = t_start.split('.')[0] + '.' + t_start.split('.')[1][0:2]
-			t_end = str(t.end_time)
-			if len(t_end.split('.')) > 1:
-				t_end = t_end.split('.')[0] + '.' + t_end.split('.')[1][0:2]
-			return_result.append([t_type, t_status, t_start, t_end, str(t.infomation)])
+	task_lists = AjaxHandler.get_tasks(0)		
+	for t in task_lists:
+		t_type = t.task_type.replace('TYPE_','')
+		t_status = t.task_status.replace('STATUS_', '')
+		t_start = str(t.start_time)
+		if len(t_start.split('.')) > 1:
+			t_start = t_start.split('.')[0] + '.' + t_start.split('.')[1][0:2]
+		t_end = str(t.end_time)
+		if len(t_end.split('.')) > 1:
+			t_end = t_end.split('.')[0] + '.' + t_end.split('.')[1][0:2]
+		return_result.append([t_type, t_status, t_start, t_end, str(t.infomation)])
 	return HttpResponse(json.dumps(return_result), mimetype="application/json")
 
 def goods_home(request):
@@ -186,6 +184,7 @@ def goods_home(request):
 		'which_side_bar_to_select': 2,
 		'qq_status': get_current_qq_status(request),
 		'goods_count':AjaxHandler.get_goods_count(),
+		'cat_count': GoodsProcessedGroup.objects.count(),
 	})
 
 def fetch_relations(request):
@@ -196,7 +195,7 @@ def fetch_relations(request):
 
 def find_goods(request):
 	''' Ajax request '''
-	AjaxHandler.find_goods()
+	LDAHandler.find_goods()
 	return HttpResponse(json.dumps({'ret_code':0}), mimetype="application/json")
 
 def show_relations(request):

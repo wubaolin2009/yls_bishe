@@ -13,6 +13,8 @@
       <!--a href='/yls_app/convert_to_final_dict' class="btn btn-primary" type="button">抓取商品评论</a><br>-->
       <a href='/yls_app/view_goods_category' class="btn btn-primary" type="button">商品分类</a><br>
       <a href='/yls_app/view_goods_by_cate?category=all&subtitle=所有' class="btn btn-warning" type="button">查看商品</a><br>
+      <a href='/yls_app/goods_process' class="btn btn-success" type="button">Process商品</a><br>
+      <a href='/yls_app/goodsgroup_process' class="btn btn-danger" type="button">Process商品Cat</a><br>
       <!--<a href='/yls_app/convert_to_final_dict' class="btn btn-info" type="button">分词</a><br>-->
       <!--<a href='/yls_app/convert_to_final_dict' class="btn btn-success" type="button">运行LDA</a><br>-->
   </div>
@@ -30,7 +32,7 @@
           </tr>
           <tr>
             <th>抓取商品</th>
-            <th>{{goods_count}}个商品信息</th>
+            <th>{{goods_count}}个商品信息,    {{cat_count}} Goods Category</th>
             <th>----</th>
           </tr>
         </table>
@@ -55,4 +57,5 @@ $(document).ready(function(){
       }, "json" );
   });
 });
+</script>
 {% endblock %}

@@ -105,7 +105,8 @@ class DangDang(object):
         goods.product_html = start
         goods.product_name = title
         goods.product_category = category
-        goods.save()
+        # Only for demo
+        ##goods.save()
         # BFS
         product_id = start.split('/')[-1].split('.')[0]
         other_products = get_other_products(product_id)
@@ -175,8 +176,9 @@ class DangDang(object):
             result.product_html = product.product_html
             result.product_des = u' '.join(words)
             result.product_category = product.product_category
-            if len(words) > 0:
-                result.save()
+            # 'Only Demo'
+#            if len(words) > 0:
+#                result.save()
 
     @staticmethod
     def process_goods_by_group():
@@ -206,5 +208,6 @@ class DangDang(object):
             entry.category_name = m
             words = u' '.join([i.product_des for i in groups[m]])
             entry.product_des = words
-            entry.save()
+#Only Demo
+#            entry.save()
             

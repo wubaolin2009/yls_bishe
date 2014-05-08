@@ -210,14 +210,21 @@ class LdaGibbsSampler:
                 .set_phisum()
             self.numstats = 0.0
         self.initial_state()
+        t = Task.create_new_lda_task()
+        t.status = Task.TASK_STATUS_STARTED
+        t.save()
+
         for i in range(self.maxIter):
             print "iteration", i , time.ctime()
+            t.info = "iteration" + str(i) + " " + str(time.ctime())
+            t.save()
             for m in range(len(self.z)):
                 for n in range(len(self.z[m])):
                     self.z[m][n] = self.sample_full_conditional(m, n)
 
             if i % 100 == 0:
                 self.update_params()
+        Task.finish_task(t,success=True)
 
     def sample_full_conditional(self, m, n):
         topic = self.z[m][n]

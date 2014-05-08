@@ -100,6 +100,9 @@ def iat_lda_inner(K):
     # get the vocabulary file
     V = run_lda.read_vocab('yls_app/tools/wbl_80_converted_manual_processed')
     Vset = set(V)
+    t = Task.create_new_iat_task()
+    t.status = Task.TASK_STATUS_STARTED
+    t.save()
 
     # Read all authors and their tokens
     print 'load all the tokens'
@@ -189,6 +192,8 @@ def iat_lda_inner(K):
     available_authors = [get_author_indexes(all_authors,all_authors[m]) for m in range(len(Kmn))]
     for iteration in range(0,iterations):
         print 'iteration %d'%(iteration),time.ctime()
+        t.info = 'iteration %d %s'%(iteration,str(time.ctime()))
+        t.save()
         for m in range(len(Kmn)):
             for w_index in range(len(Kmn[m])):
                 w = all_author_token[m][1][w_index]
@@ -221,7 +226,8 @@ def iat_lda_inner(K):
         for t in range(len(V)):
             phi[k][t] = (nkw[k][t] + beta) / (len(V)*beta + nk[k])
 
-    save_results(K,Kmn,Amn,phi,sita,nak,nkw,na,nk)
+#    save_results(K,Kmn,Amn,phi,sita,nak,nkw,na,nk)
+    Task.finish_task(t,success=True)
 
 def iat_lda_inference(TEST_K):
     K = TEST_K

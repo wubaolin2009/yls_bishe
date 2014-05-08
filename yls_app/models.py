@@ -60,11 +60,21 @@ class Task(models.Model):
 	TYPE_RUNLDA="TYPE_RUNLDA"
 	TYPE_CONVERT_RAW_TOKEN="TYPE_CONVERT_RAW_TOKEN"
 	TYPE_GENERATE_RELATION_IMAGE="TYPE_GEN_RELATION_IMAGE"
+	TYPE_FETCH_WEIBO="TYPE_FETCH_WEIBO"
+	TYPE_LDA="TYPE_LDA"
+	TYPE_AT="TYPE_AT"
+	TYPE_IAT="TYPE_IAT"
+	TYPE_FETCH_RELATIONS="TYPE_FETCH_RELATIONS"
 	TYPE_CHOICES = (
 		(TYPE_CUT, 'Cut the document to words'),
 		(TYPE_RUNLDA, 'Run LDA to find topics.'),
 		(TYPE_CONVERT_RAW_TOKEN, 'Convert to Raw data'),
 		(TYPE_GENERATE_RELATION_IMAGE, 'generate relation image'),
+		(TYPE_FETCH_WEIBO,"fetch the weibos"),
+		(TYPE_LDA,"lda"),
+		(TYPE_AT,"AT"),
+		(TYPE_IAT,"IAT"),
+		(TYPE_FETCH_RELATIONS,"Fetch relations"),
 	)
 	task_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
 
@@ -94,7 +104,7 @@ class Task(models.Model):
 	def fill_raw(t):
 		t.start_time = Task.get_date_time()
 		t.end_time = t.start_time
-		t.task_status = Task.TASK_STATUS_NOT_START
+		t.task_status = Task.TASK_STATUS_STARTED
 		return t
 
 	@staticmethod
@@ -128,6 +138,46 @@ class Task(models.Model):
 		t = Task()
 		t = Task.fill_raw(t)
 		t.task_type = Task.TYPE_GENERATE_RELATION_IMAGE
+		t.infomation = "No results available"
+		t.save()
+		return t
+	@staticmethod
+	def create_new_fetch_relation_task():
+		t = Task()
+		t = Task.fill_raw(t)
+		t.task_type = Task.TYPE_FETCH_RELATIONS
+		t.infomation = "No results available"
+		t.save()
+		return t
+	@staticmethod
+	def create_new_fetch_weibo_task():
+		t = Task()
+		t = Task.fill_raw(t)
+		t.task_type = Task.TYPE_FETCH_WEIBO
+		t.infomation = "No results available"
+		t.save()
+		return t
+	@staticmethod
+	def create_new_lda_task():
+		t = Task()
+		t = Task.fill_raw(t)
+		t.task_type = Task.TYPE_LDA
+		t.infomation = "No results available"
+		t.save()
+		return t
+	@staticmethod
+	def create_new_at_task():
+		t = Task()
+		t = Task.fill_raw(t)
+		t.task_type = Task.TYPE_AT
+		t.infomation = "No results available"
+		t.save()
+		return t
+	@staticmethod
+	def create_new_iat_task():
+		t = Task()
+		t = Task.fill_raw(t)
+		t.task_type = Task.TYPE_IAT
 		t.infomation = "No results available"
 		t.save()
 		return t
