@@ -700,7 +700,7 @@ def recommend_the_good_save_results(meaningful_words_path,user,cats_goods,weight
     documents = []
     results = read_single_good_topic_results()
     new_documents = []
-    save_results = True
+    save_results = False
 
     # read the tweets of this user
     for entry in TweetUserToken.objects.filter(user_name=user):
