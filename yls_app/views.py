@@ -499,3 +499,8 @@ def run_iat_lda(request):
 def metro_home(request):
 	return render(request,'yls_app/metro_home.html',{
 	       })
+
+def logout_qq(request):
+	for i in request.session.keys():
+		del request.session[i]
+	return HttpResponseRedirect('/yls_app/crawl_weibo')
