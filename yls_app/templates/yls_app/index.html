@@ -1,23 +1,100 @@
 {% extends "yls_app/base.html" %}
-
+{% load staticfiles %}
 {% block title %} 欢迎 {% endblock %}
 
 {% block content %}
+<link href="{% static 'yls_app/css/MetroJs.css' %}" rel="stylesheet">
+<section class="main-content panorama clear-fix">
+  <div class="content-wrapper tiles blue">
+    <section class="tile-group four-wide first">
+      <div class="live-tile" data-delay="6000" data-mode="flip" data-bounce="true" data-direction="horizontal">
+        <div>
+          <a href="http://dev.w3.org/html5/spec/spec.html" onclick="javascript:_gaq.push('_trackPageview',['/outgoing/dev.w3.org/html5/']);" target="_blank">
+            <img src="images/skills/HTML5.png" class="full" alt="html5" title="HTML 5" />
+          </a>
+        </div>
+        <div>
+          <a href="http://www.w3.org/Style/CSS/current-work.en.html" onclick="javascript:_gaq.push('_trackPageview',['/outgoing/www.w3.org/Style/CSS/current-work.en.html']);" target="_blank">
+            <img src="images/skills/css3.jpg" title="CSS 3" class="full" alt="css 3" />
+          </a>
+        </div>
+      </div>                
 
-<div class="jumbotron">
-  <h1>欢迎！</h1>
-    <p class="lead">本网页用于毕设展示， 后台任务操作。</p>
-    <p><a class="btn btn-lg btn-success" href="/yls_app/view_iat_topics" role="button">查看最新的话题结果</a></p>
-  </div>
+      <div class="live-tile two-wide exclude">
+        <div><p>TMMTTT</p></div>
+      </div>
 
-  <div class="row marketing">
-    <div class="col-lg-6">
-      <h4>标题</h4>
-      <p>暂未实现</p>         
-    </div>
-  </div>
-</div>
+      <div class="live-tile me" data-mode="slide" data-stops="50%,100%,0px" data-link="/about" data-bounce="true" data-stack="true" data-delay="4250">
+        <div><img class="full" src="images/drewg2.jpg" alt="Drew Greenwell" /></div>
+        <div><span class="p-left p-bottom metroExtraLarge">Me</span></div>
+      </div>
+
+      <div class="live-tile two-wide accent emerald" data-pause-onhover="true" data-bounce="true" data-link="http://www.leapagency.com" data-new-window="true" onclick="javascript:_gaq.push(['_trackPageView','/outgoing/leapagency.com']);">
+        <div>
+         <a href="http://www.leapagency.com" target="_blank" onclick="javascript:_gaq.push(['_trackPageView','/outgoing/leapagency.com']);"><img class="full" src="/images/leap-digital-agency.jpg" alt="Leap Agency" /></a></div>
+        <div>
+          <p>MMEET.</p>
+          <span class="tile-title">leap</span>
+        </div>
+      </div>
+
+      <div class="live-tile skills exclude">
+        <ul class="flip-list skill-list nineTiles" data-mode="flip-list" data-back-isbg="true" data-always-trigger="true" data-pause-onnhover="true" data-swap="image" data-initdelay="2000" data-delay="5000">
+          <li><div><img src="images/skills/mcsd_small.jpg" alt="front" /></div><div class="accent"><img src="images/1pixel.gif" alt="back" /></div></li>
+          <li data-direction="horizontal"><div><img src="images/skills/dotnet_small.jpg" alt="front" /></div><div><img src="images/1pixel.gif" alt="back" /></div></li>
+          <li><div><img src="images/skills/jquery_small.jpg" alt="front" /></div><div><img src="images/1pixel.gif" alt="back" /></div></li>                        
+          <li><div><img src="images/skills/mvc_small.jpg" alt="front" /></div><div><img src="images/1pixel.gif" alt="back" /></div></li>
+          <li><div><img src="images/skills/ajax_small.jpg" alt="front" /></div><div><img src="images/1pixel.gif" alt="back" /></div></li>
+          <li><div><img src="images/skills/aspnet_small.jpg" alt="front" /></div><div><img src="images/1pixel.gif" alt="back" /></div></li>
+          <li><div><img src="images/skills/w3c_small.jpg" alt="front" /></div><div><img src="images/1pixel.gif" alt="back" /></div></li>
+          <li><div><img src="images/skills/xna_small.jpg" alt="front" /></div><div><img src="images/1pixel.gif" alt="back" /></div></li>
+          <li><div><img src="images/skills/silverlight_small.jpg" alt="front" /></div><div><img src="images/1pixel.gif" alt="back" /></div></li>
+        </ul>
+      </div>
+
+      <div class="live-tile projects" data-mode="slide" data-swap-back="image" data-stack="true" data-bounce="true" data-link="/projects" data-stops="100%" data-delay="8000">
+        <div>
+          <p>
+            <span class="metroExtraLarge title">Projects</span>
+            <img src="images/projects.png" alt="projects" class="full head" />
+          </p>
+        </div>
+        <div>
+          <img src="images/projects/leapfrog-kinect.jpg" class="full" alt="Digital out of Home project with LeapFrog Interactive" />
+        </div>
+      </div>
+
+      <div class="tile-strip four-wide half-tall">
+        <ul class="flip-list color-strip" data-mode="flip-list" data-always-trigger="true" data-initdelay="250" data-delay="3500">
+          <li class="half-tile" data-direction="horizontal"><div></div><div class="accent orange"></div></li>
+          <li class="half-tile"><div></div><div class="accent green"></div></li>
+          <li class="half-tile"><div></div><div class="accent teal"></div></li>                        
+          <li class="half-tile"><div></div><div class="accent red"></div></li>
+          <li class="half-tile"><div></div><div class="accent yellow"></div></li>
+          <li class="half-tile"><div></div><div class="accent steel"></div></li>
+          <li class="half-tile"><div></div><div class="accent pink"></div></li>
+          <li class="half-tile"><div></div><div class="accent purple"></div></li>        </ul>
+      </div>
+</section>
+
 
 {% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'yls_app/js/MetroJs.js' %}"></script>
+<script>
+$(document).ready(function(event){
+//flip mode simple
+//using data attributes
+$(".live-tile").liveTile();
+// jQuery UI 
+// http://jqueryui.com/sortable/#display-grid
+$( ".tiles" ).sortable();
+$( ".tiles" ).disableSelection();
+});
+
+</script>
+{% endblock %}
+
 
       

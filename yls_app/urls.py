@@ -35,4 +35,5 @@ urlpatterns = patterns('',
     url(r'goodsgroup_process',views.goodsgroup_process,name='goodsgroup_process'),
     url(r'goods_rec', views.goods_rec, name='views_rec_the_goods'),
     url(r'rec', views.rec, name='views_rec'),                     
+    url(r'metro_home',views.metro_home,name='metro_home'),
 )

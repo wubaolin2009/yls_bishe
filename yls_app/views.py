@@ -495,3 +495,7 @@ def view_iat_topics(request):
 def run_iat_lda(request):
 	iat_lda.iat_lda()
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
+
+def metro_home(request):
+	return render(request,'yls_app/metro_home.html',{
+	       })
