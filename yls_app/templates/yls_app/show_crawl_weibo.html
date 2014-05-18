@@ -6,45 +6,49 @@
 
 <div class="row">
   <div class="col-md-3">
-      新建抓取任务 <br>
-      当前状态:  {{status}} <br>
-      {{content}}
+    {{content}}
+    <ul class="list-group dif" >
+      <a href='#' class="list-group-item ">菜单</a>
       {% if qq_status.0 == False %}
-      <a href='{{qq_status.1}}' class="btn btn-danger" type="button">请先登录qq微博</a>
+      <a href='{{qq_status.1}}' class="list-group-item border_down border_up border_side">请先登录微博</a>
       {% else %}
-      <a class="btn btn-primary" href='/yls_app/fetch_relations' type="button">抓取收听关系</a>
+      <a href='/yls_app/fetch_relations' class="list-group-item border_up border_side">抓取收听关系</a>
       <!--a class="btn btn-warning" href='/yls_app/show_relations' type='button'> 查看关系  </a-->
-      <a href='/yls_app/fetch_weibo' class="btn btn-success" type="button">抓取qq微博</a>
+      <a href='/yls_app/fetch_weibo' class="list-group-item border_down border_side border_side">抓取微博</a>
       {% endif %}
-      <br>
-      <a href='/yls_app/view_weibouser' class="btn btn-warning" type="button">查看微博用户</a><br>
-      <a href='/yls_app/start_cut' class="btn btn-success" type="button">开始分词</a><br>
-      <a href='/yls_app/view_meaningful_words' class="btn btn-danger" type="button">查看有意义词</a><br>
+
+      <a href='/yls_app/view_weibouser' class="list-group-item border_up border_side border_side">查看微博用户</a>
+      <a href='/yls_app/start_cut' class="list-group-item border_side">开始分词</a>
+      <a href='/yls_app/view_meaningful_words' class="list-group-item border_down border_side">查看有意义词</a>
       <!--a href='/yls_app/convert_to_final_dict' class="btn btn-primary" type="button">转换最终词典</a><br-->
-      <a class="btn btn-warning" href='/yls_app/start_lda' type="button">开始LDA</a><br>
-      <a class="btn btn-danger" href='/yls_app/run_at_lda' type="button">开始AT</a><br>
-      <a class="btn btn-primary" href='/yls_app/run_iat_lda' type="button">开始IAT</a><br>
+
+      <a href='/yls_app/start_lda' class="list-group-item border_up border_side">开始LDA</a>
+      <a href='/yls_app/run_at_lda' class="list-group-item border_side">开始AT</a>
+      <a href='/yls_app/run_iat_lda' class="list-group-item border_down border_side">开始IAT</a>
+
       <!--a class="btn btn-warning" href='/yls_app/goods_process' type="button">ProcessGoods</a><br-->
       <!--a class="btn btn-warning" href='/yls_app/goodsgroup_process' type="button">ProcessGoods_Group</a><br-->
       <!--a  class="btn btn-primary" href='/yls_app/clear_topics' type="button">清除结果</a-->
-      <a  class="btn btn-danger" href='/yls_app/view_topics' type="button">查看LDA结果</a>
-      <a  class="btn btn-warning" href='/yls_app/view_at_topics' type="button">查看AT结果</a>
-      <a  class="btn btn-primary" href='/yls_app/view_iat_topics' type="button">查看IAT结果</a>
-      <a  class="btn btn-success" href='/yls_app/view_weibouser?rec=1' type="button">推荐商品</a>
+      <a href='/yls_app/view_topics' class="list-group-item border_up border_side">查看LDA结果</a>
+      <a href='/yls_app/view_at_topics' class="list-group-item border_side">查看AT结果</a>
+      <a href='/yls_app/view_iat_topics' class="list-group-item border_down border_side">查看IAT结果</a>
+
+      <a href='/yls_app/view_weibouser?rec=1' class="list-group-item border_up border_down2 border_side">推荐商品</a>
+    </ul>
   </div>
   <div class="col-md-9">
-      当前抓取用户数: <a id="weibo_user_count">{{got_user_count}} </a> <br>
-      当前用户关系结果: <a id="weibo_rel_count">{{got_relations_count}}  </a><br>
-      当前微博条数: <a id="weibo_count">{{weibos_count}} </a><br>
-<!--      当前分词结果: <a id="weibo_tokened">{{tokened_count}} 已经分词 </a><br> -->
-      <div class="panel panel-primary">
+<!-- 当前分词结果: <a id="weibo_tokened">{{tokened_count}} 已经分词 </a><br> -->
+      <div class="panel panel-info">
         <!-- Default panel contents -->
         <div class="panel-heading">最近任务状态
-          <th><a id='refresh_task' class="btn btn-success" type="button">刷新任务</a></th>
-          <th><a id='view_all_task' class="btn btn-danger" type="button">查看所有任务</a></th> 
+	  <div class="pull-right btn-group">
+            <a id='refresh_task' class="btn btn-info btn-sm" type="button">刷新任务</a>
+            <a id='view_all_task' class="btn btn-info btn-sm" type="button">所有任务</a> 
+	  </div>
+	  <br>
         </div>
         <!-- Table -->
-        <table class="table" border="1" id="table_tasks">
+        <table class="table"  id="table_tasks">
           <tr>            
             <th>任务类型</th>
             <th>任务状态</th>
@@ -53,31 +57,49 @@
           </tr>
         </table>
       </div>
+    <ul class='list-group'>
+      <li class="list-group-item">
+	<span class="badge" id="weibo_user_count">{{got_user_count}}</span>
+	当前抓取用户数:
+      </li>
+      <li class="list-group-item">
+	<span class="badge" id="weibo_rel_count">{{got_relations_count}}</span>
+	当前用户关系结果:
+      </li>
+      <li class="list-group-item">
+	<span class="badge" id="weibo_count">{{weibos_count}} </a></span>
+	当前微博条数:
+      </li>
+    </ul>
+
   </div>
 </div>
 
 <!-- THe modal to show all tasks -->
 <div id="modal_show_all_tasks" class="modal fade">
-  <div class="col-md-12">
-      <div class="panel panel-success">
-        <!-- Default panel contents -->
-        <div class="panel-heading">所有任务状态
-          <a class="btn btn-danger" onclick="$('#modal_show_all_tasks').modal('hide');" type="button">关闭</a>
-        </div>
-        <!-- Table -->
-        <table class="table" border="1" id="table_tasks_modal">
-          <tr>            
-            <th>任务类型</th>
-            <th>任务状态</th>
-            <th>起始时间</th>
-            <th>结束时间</th>
-            <th>详细信息</th>        
-          </tr>
-        </table>
+  <div class="col-md-2"></div>
+  <div class="col-md-8">
+    <div class="panel panel-info">
+      <!-- Default panel contents -->
+      <div class="panel-heading">
+	所有任务状态
+        <a class="btn btn-default btn-sm pull-right" onclick="$('#modal_show_all_tasks').modal('hide');" type="button">关 闭</a>
+	<br>
       </div>
+      <!-- Table -->
+      <table class="table" id="table_tasks_modal">
+        <tr>            
+          <th>任务类型</th>
+          <th>任务状态</th>
+          <th>起始时间</th>
+          <th>结束时间</th>
+          <th>详细信息</th>        
+        </tr>
+      </table>
+    </div>
   </div>  
+  <div class="col-md-2"></div>
 </div>
-
 
 {% endblock %}
 
@@ -111,7 +133,7 @@ $(document).ready(function(event){
   var type_cut = "TYPE_CUT";
   var type_lda = "TYPE_RUNLDA";
   var type_convert = 'TYPE_CONVERT_RAW_TOKEN';
-  var max_entry = 4;
+  var max_entry = 5;
   $('#refresh_task').click(function(event){
     // remove the current view
     $("tr[name='task_']").remove();

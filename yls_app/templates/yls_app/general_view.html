@@ -6,45 +6,56 @@
 {% block content %}
 <div class="row">
   <div class="col-md-12">
-    <div class="panel panel-success">
+    <div class="panel panel-info">
+      {% if has_title %}
       <div class="panel-heading">
 	{% autoescape off %}
-	<div class="col-md-6"> <h2> {{title}}</h2>{{subtitle}} </div>
+	<h2> {{title}}</h2>{{subtitle}}
 	{% endautoescape %}
-	<div class="col-md-6" id="page_it"></div>
-      <div class="panel-body" id="to_render">
-	<ul class="list-group">
-	  {% for line in table %}
-	  <li class="list-group-item list-group-item-success">
-	    <div class="media">
-	      <a class="pull-left" href="#">
-		{% if column_descs.0 == 'image' %}
-		<img width="64px" class="media-object" src="{{line.0}}" alt="图片">
-		{% endif %}
-		{% if column_descs.0 == 'text' %}
-		{{line.0}}
-		{% endif %}
-		{% if column_Descs.0 == 'link' %}
-		<a href="{{line.3}}">{{line.0}}</a>
-		{% endif %}
-	      </a>
-	      <div class="media-body">
-		<!-- We Allow HTML injected here -->
-		{% autoescape off %}
-		{% if column_descs.1 == 'text' %}
-		<h4 class="media-heading">{{line.1}}</h4>
-		{% endif %}
-		{% if column_descs.1 == 'link' %}
-		<h4 class="media-heading"><a href="{{line.4}}">{{line.1}}</a></h4>
-		{% endif %}
-		{{line.2}}
-		{% endautoescape %}
+      </div>
+      {% endif %}
+      <div class="panel-body">
+	<div id="to_render">
+	  <ul class="list-group">
+	    {% for line in table %}
+	    <li class="list-group-item {{line.9}}">
+	      <div class="media">
+		<a class="pull-left" href="#">
+		  {% if column_descs.0 == 'image' %}
+		  <img width="76px" class="media-object" src="{{line.0}}" alt="图片">
+		  {% endif %}
+		  {% if column_descs.0 == 'text' %}
+		  {{line.0}}
+		  {% endif %}
+		  {% if column_Descs.0 == 'link' %}
+		  <a href="{{line.3}}">{{line.3}}</a>
+		  {% endif %}
+		</a>
+		<div class="media-body">
+		  <!-- We Allow HTML injected here -->
+		  {% autoescape off %}
+		  {% if column_descs.1 == 'text' %}
+		  <h4 class="media-heading">{{line.1}}</h4>
+		  {% endif %}
+		  {% if column_descs.1 == 'link' %}
+		  <h4 class="media-heading"><a href="{{line.4}}">{{line.1}}</a></h4>
+		  {% endif %}
+		  {{line.2}}
+		  {% endautoescape %}
+		</div>
 	      </div>
-	    </div>
-	  </li>
-	  {% endfor %}
+	    </li>
+	    {% endfor %}
+	</div>
+	<div class="row-fluid">
+	  <div class="col-md-2"></div>
+	  <div class="col-md-8">
+	    <div  id="page_it" align="center"></div>
+	  </div>
+	  <div class="col-md-2"></div>
+	</div>
 	</ul>
-      </div> <!-- end of body -->
+      </div>
     </div> <!-- panel -->
   </div> <!-- md-12 -->
 </div>
@@ -54,78 +65,75 @@
 {% block extra_js %}
 
 <script type="text/javascript">
-function add_preview() {
+  function add_preview() {
   if($('a[id^=\'preview_img_\']').length == 0){
-    return;
+  return;
   }
   $('a[id^=\'preview_img_\']').imgPreview({
-    containerID: 'imgPreviewWithStyles',
-    imgCSS: {
-        // Limit preview size:
-        height: 300
-    },
-    // When container is shown:
-    onShow: function(link){
-        // Animate link:
-        $(link).stop().animate({opacity:0.4});
-        // Reset image:
-        $('img', this).stop().css({opacity:0});
-    },
-    // When image has loaded:
-    onLoad: function(){
-        // Animate image
-        $(this).animate({opacity:1}, 300);
-    },
-    // When container hides: 
-    onHide: function(link){
-        // Animate link:
-        $(link).stop().animate({opacity:1});
-    }
+  containerID: 'imgPreviewWithStyles',
+  imgCSS: {
+  // Limit preview size:
+  height: 300
+  },
+  // When container is shown:
+  onShow: function(link){
+  // Animate link:
+  $(link).stop().animate({opacity:0.4});
+  // Reset image:
+  $('img', this).stop().css({opacity:0});
+  },
+  // When image has loaded:
+  onLoad: function(){
+  // Animate image
+  $(this).animate({opacity:1}, 300);
+  },
+  // When container hides: 
+  onHide: function(link){
+  // Animate link:
+  $(link).stop().animate({opacity:1});
+  }
   });
-}
-function goto_page(page){
+  }
+  function goto_page(page){
   var url = '{{page_url}}';
   $('#to_render').html('正在加载...');
   $.get(url, { '{{param1_key}}':'{{param1_value}}', 'page_num':page},
-    function(data, textStatus) {
-      var result = $('#to_render',$(data)).html();
-      $('#to_render').html(result);
-      add_preview();
-    }, "html");
-};
+  function(data, textStatus) {
+  var result = $('#to_render',$(data)).html();
+  $('#to_render').html(result);
+  add_preview();
+  }, "html");
+  };
 
-$(document).ready(function(event){
+  $(document).ready(function(event){
   var options = {
-    bootstrapMajorVersion:"2",
-    currentPage:{{page_start}},
-    totalPages:{{page_count}},
-    size:"small",
-    alignment:"right",
-    useBootstrapTooltip:true,
-    onPageChanged: function(e, oldPage, newPage){
-        goto_page(newPage);
-    },
-    tooltipTitles: function (type, page, current) {
-        switch (type) {
-            case "first":
-                return "首页";
-            case "prev":
-                return "前一页";
-            case "next":
-                return "后一页";
-            case "last":
-                return "最后一页";
-            case "page":
-                return "第" + page + "页";
-            }
-        }
+  bootstrapMajorVersion:"2",
+  currentPage:{{page_start}},
+  totalPages:{{page_count}},
+  size:"small",
+  alignment:"right",
+  useBootstrapTooltip:true,
+  onPageChanged: function(e, oldPage, newPage){
+  goto_page(newPage);
+  },
+  tooltipTitles: function (type, page, current) {
+  switch (type) {
+  case "first":
+  return "首页";
+  case "prev":
+  return "前一页";
+  case "next":
+  return "后一页";
+  case "last":
+  return "最后一页";
+  case "page":
+  return "第" + page + "页";
+  }
+  }
   }
   $('#page_it').bootstrapPaginator(options);
   add_preview();
-});
+  });
 </script>
 <script src={% static "yls_app/js/imgpreview.full.jquery.js" %}
-<script>
-</script>
-
 {% endblock %}

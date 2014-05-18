@@ -174,6 +174,8 @@ def get_tasks(request):
 		if len(t_start.split('.')) > 1:
 			t_start = t_start.split('.')[0] + '.' + t_start.split('.')[1][0:2]
 		t_end = str(t.end_time)
+		#t_start = t_start.split('+')[0]
+		#t_end = t_end.split('+')[0]
 		if len(t_end.split('.')) > 1:
 			t_end = t_end.split('.')[0] + '.' + t_end.split('.')[1][0:2]
 		return_result.append([t_type, t_status, t_start, t_end, str(t.infomation)])
@@ -212,7 +214,7 @@ def get_weibo_stats(request):
 	}
 	return HttpResponse(json.dumps(data), mimetype="application/json")
 
-G_ITEMS_PER_PAGE = 6
+G_ITEMS_PER_PAGE = 12
 def get_start_end_item(page_num, all_counts, ITEMS_PER_PAGE=G_ITEMS_PER_PAGE):
 	start_item = (int(page_num) - 1) * ITEMS_PER_PAGE
 	end_item = start_item + ITEMS_PER_PAGE
@@ -226,7 +228,6 @@ def get_page_count(all_counts, ITEMS_PER_PAGE = G_ITEMS_PER_PAGE):
 def view_goods_category(request):
 	page_num = request.GET['page_num'] if 'page_num' in request.GET.keys() else 1
 
-	column_descs = ['image', 'link', 'text']
 	table = []
 	cates = GoodsCategories.get_all_cates()
 	all_counts = len(cates)
@@ -238,20 +239,33 @@ def view_goods_category(request):
 		title = cat_count[0]
 		counts_cat = '共有' + str(cat_count[1]['count']) + '种商品'
 		row = [image_url, title, counts_cat]
-		row.append('')
+		row.append('View Goods')
 		row.append('/yls_app/view_goods_by_cate?category='+title)
 		table.append(row)
+	new_table = []
+	temp_table = []
+	SPAN = 3
+	PER_LINE = 12 / SPAN
+	for i in range(len(table)):
+		print i,'---',temp_table
+		if i % PER_LINE == 0 and i != 0:
+			new_table.append(temp_table)
+			temp_table = []
+		temp_table.append(table[i])
+
+        new_table.append(temp_table)
+	table = new_table
+
 	param = {
 		'which_side_bar_to_select': 2,
-		'column_descs':column_descs,
 		'title':u'商品类别',
 		'table':table,
-		'subtitle': '按商品数排序',
+		'span':SPAN,
 		'page_start':page_num, # only useful for the first time
 		'page_count':get_page_count(all_counts),
 		'page_url':'/yls_app/view_goods_category',
 	}
-	return render(request, 'yls_app/general_view.html',param)
+	return render(request, 'yls_app/goods_view.html',param)
 
 def view_goods_by_cate(request):
 	html_parser = HTMLParser.HTMLParser()
@@ -259,9 +273,7 @@ def view_goods_by_cate(request):
 	page_num = request.GET['page_num'] if 'page_num' in request.GET.keys() else 1
 
 	subtitle = request.GET['subtitle'] if 'subtitle' in request.GET.keys() else category
-	# table [ left, top, bottom, 'link' if left.type=link else '', 'link' if top.type=link else ''
-	# left, top, bottom 's type
-	column_descs = ['image', 'link', 'text']
+
 	table = []
 	if category == 'all':
 		all_counts = Goods.objects.all().count()
@@ -276,24 +288,39 @@ def view_goods_by_cate(request):
 		product_html = product.product_html
 		product_name = html_parser.unescape(product.product_name)
 		product_cat = product.product_category
-		row = [product_html, product_name, product_cat]
+		row = [product_html, product_name,'']
 		row[0] = product.product_image_url
-		row.append('')
+		row.append('View Good')
 		row.append('http://'+product_html) # link to click top title
 		table.append(row)
+
+	new_table = []
+	SPAN = 3
+	PER_LINE = 12 / SPAN
+	temp_table = []
+	for i in range(len(table)):
+		if i % PER_LINE == 0 and i != 0:
+			new_table.append(temp_table)
+			print new_table
+			temp_table = []
+		temp_table.append(table[i])
+
+        new_table.append(temp_table)
+	table = new_table
+
 	param = {
 		'which_side_bar_to_select': 2,
-		'column_descs':column_descs,
 		'title':u'商品信息',
+		'subtitle':subtitle,
+		'span': SPAN,
 		'table':table,
-		'subtitle': subtitle,
 		'page_start':page_num, # only useful for the first time
 		'page_count':get_page_count(all_counts),
 		'page_url':'/yls_app/view_goods_by_cate',
 		'param1_key':'category',
 		'param1_value':category,
 	}
-	return render(request, 'yls_app/general_view.html',param)
+	return render(request, 'yls_app/goods_view.html',param)
 
 def get_tweet_count(user_name):
 	return Tweet.objects.filter(name = user_name).count()
@@ -312,7 +339,8 @@ def view_weibouser(request):
 		if Tweet.objects.filter(name=user.name).exists():
 			return Tweet.objects.filter(name=user.name)[0].text
 		return '没有抓到微博'
-
+	style = ['info_bg','']
+	style_count = 0
 	for user in WeiboUser.objects.all()[start_item:end_item]:
 		image_url = user.head + '/40'
 		title = user.nick
@@ -327,7 +355,14 @@ def view_weibouser(request):
                     row.append('/yls_app/view_weibo_by_user?user_name='+user.name)
 		else:
                     row.append('/yls_app/view_weibo_by_user?user_name='+user.name + '&rec=1')
+	        rooms_left = 9 - len(row)
+        	for i in range(rooms_left):
+			row.append(0)
+        	row.append(style[style_count % 2])
+		print row[9]
+		style_count += 1
                 table.append(row)
+
 
 	param = {
 		'which_side_bar_to_select': 1,

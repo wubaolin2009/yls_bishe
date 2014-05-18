@@ -14,32 +14,88 @@
 
     <!-- Bootstrap core CSS -->
     <link href="{% static 'yls_app/css/bootstrap.css' %}" rel="stylesheet">
-
+    {% block extra_css %}
+    {% endblock %}
+    <link rel="stylesheet" href="{% static 'yls_app/css/bootswatch.min.css' %}">
     <!-- Custom styles for this template -->
     <link href="{% static 'yls_app/css/jumbotron-narrow.css' %}" rel="stylesheet">
+    <style type="text/css">
+      /* ul.list-group.dif > a.list-group-item.color1:hover{background-color:yellow;}
+      ul.list-group.dif > a.list-group-item.color2:hover{background-color:yellow;}
+      ul.list-group.dif > a.list-group-item.color3:hover{background-color:yellow;}
+      ul.list-group.dif > a.list-group-item.color4:hover{background-color:yellow;}
+      ul.list-group.dif > a.list-group-item.color5:hover{background-color:yellow;} */
+      
+      ul.list-group.dif > a {
+      /* background-color: #c952ca; */
+      /*color: black;*/
+      text-align: center;
+      font-size:100%;
+      }
+      ul.list-group.dif > a.list-group-item:first-child{
+      background-color: #d9edf7;
+      font-size: 120%; 
+      color: #3a87ad;
+      }
+      ul.list-group.dif > a.list-group-item{
+      height:40px;
+      }
+      ul.list-group.dif > a.list-group-item.color1{
+      background-color: #5882FA;
+      }
+      ul.list-group.dif > a.list-group-item.border_side {
+      border-left-color:#d9edf7;
+      border-right-color:#d9edf7;
+      border-left-width:4px;
+      border-right-width:4px;
+      }
+      ul.list-group.dif > a.list-group-item.border_down{
+      border-bottom-color:#d9edf7;
+      border-bottom-width:2px;
+      }
+      ul.list-group.dif > a.list-group-item.border_down2{
+      border-bottom-color:#d9edf7;
+      border-bottom-width:4px;
+      }
+      ul.list-group.dif > a.list-group-item.border_up{
+      border-top-color:#d9edf7;
+      border-top-width:2px;
+      }
+      li.list-group-item.info_bg {
+      background-color: #d9edf7;
+      }
+
+    </style>
+ 
   </head>
 
   <body>
     <div class="container">
-      <div class="header">
-        <ul class="nav nav-pills pull-right">
-          <li name="topbar_0"><a href="/yls_app">Home</a></li>
-          <li name="topbar_1"><a href="/yls_app/crawl_weibo">腾讯微博</a></li>
-          <li name="topbar_2"><a href="/yls_app/goods_home">电商相关</a></li>
-          {% if qq_status.0 == True %}
-            <li> <a id="logout_qq" href="#">欢迎, {{qq_status.1}} </a></li>
-          {% else %}
-            <li> <a  class="btn btn-success" href='{{qq_status.1}}' type="button">登录qq微博</a> </li>
-          {% endif %}
-        </ul>
-        <h3 class="text-muted">杨柳杉的毕设</h3>        
+      <!--      <div class="header"> -->
+      <div class="navbar navbar-default">
+	<div class="navbar-header navbar-brand">
+	  杨柳杉的毕设
+	</div>
+	<div class="navbar-collapse collapse navbar-responsive-collapse">
+	  <ul class="nav navbar-nav navbar-right">
+	    <li name="topbar_0"><a href="/yls_app">首页</a></li>
+	    <li name="topbar_1"><a href="/yls_app/crawl_weibo">腾讯微博</a></li>
+	    <li name="topbar_2"><a href="/yls_app/goods_home">电商相关</a></li>
+	    {% if qq_status.0 == True %}
+	    <li> <a id="logout_qq" href="#">欢迎, {{qq_status.1}} </a></li>
+	    {% else %}
+<!--	    <li> <a  class="btn btn-success" href='{{qq_status.1}}' type="button">登录qq微博</a> </li> -->
+            <li> <a href='{{qq_status.1}}'>登录微博</a></li>
+	    {% endif %}
+	  </ul>
+	</div>
       </div>
-
+      <!--      </div> -->
       {% block content %} {% endblock %}
 
       {% block footer %}
-      <div class="footer">
-        <p>&copy; Sequoia Yang 2014</p>
+      <div class="footer" align="center">
+        <p>&copy; 杨柳杉 2014</p>
       </div>
       {% endblock %}
 
@@ -51,6 +107,7 @@
     <script src="{% static 'yls_app/js/jquery-2.1.0.js' %}"></script>
     <script src="{% static 'yls_app/js/bootstrap.js' %}"></script>
     <script src="{% static 'yls_app/js/bootstrap-paginator.js' %}"></script>
+    <script src="{% static 'yls_app/js/bootswatch.js' %}"></script>
     {% block extra_js %}
     {% endblock %}
   </body>
