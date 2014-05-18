@@ -404,6 +404,8 @@ def view_weibo_by_user(request):
 	param = {
 		'which_side_bar_to_select': 1,
 		'column_descs':column_descs,
+		'to_recommend':True,
+		'user_rec':user_name,
 		'title':u'微博',
 		'table':table,
 		'subtitle': u'<a href="%s">%s</a>'%(user_weibo_url,  u'在腾讯微博中查看'),
@@ -505,12 +507,32 @@ def goods_rec(request):
             result_to_in.append([product_title,product_image,product_cat,g.product_html])
 
 	print result_to_in
+	table = []
+	for a_product in result_to_in:
+		title,image,cat,html = a_product
+		table.append([image,title,cat,'View Good', 'http://' + html])
 	
-	return render(request, 'yls_app/rec_the_good.html', {
+	new_table = []
+	SPAN = 3
+	PER_LINE = 12 / SPAN
+	temp_table = []
+	for i in range(len(table)):
+		if i % PER_LINE == 0 and i != 0:
+			new_table.append(temp_table)
+			print new_table
+			temp_table = []
+		temp_table.append(table[i])
+
+        new_table.append(temp_table)
+	table = new_table
+
+	return render(request, 'yls_app/goods_view.html', {
 		'which_side_bar_to_select': 1,
 		'qq_status': get_current_qq_status(request),
 		'goods': result_to_in,
-		'title': '推荐的商品',
+		'title': '推荐的商品For' + user,
+		'span':SPAN,
+		'table':table,
 		})
 
 def view_iat_topics(request):

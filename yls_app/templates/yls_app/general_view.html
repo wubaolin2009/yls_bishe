@@ -14,7 +14,14 @@
 	{% endautoescape %}
       </div>
       {% endif %}
+
       <div class="panel-body">
+        {% if to_recommend %}
+	<div class="btn-group btn-group-block">
+	  <a href="/yls_app/rec?user={{user_rec}}" class="btn btn-default">推荐商品类别</a>
+	  <a href="/yls_app/goods_rec?user={{user_rec}}" class="btn btn-default">推荐商品</a>
+	</div>
+        {% endif %}
 	<div id="to_render">
 	  <ul class="list-group">
 	    {% for line in table %}

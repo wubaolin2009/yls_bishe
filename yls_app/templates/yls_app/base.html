@@ -108,18 +108,21 @@
     <script src="{% static 'yls_app/js/bootstrap.js' %}"></script>
     <script src="{% static 'yls_app/js/bootstrap-paginator.js' %}"></script>
     <script src="{% static 'yls_app/js/bootswatch.js' %}"></script>
+    <script>
+    // handle top bar select
+    $(document).ready(function(event){
+      $("li[name='topbar_{{which_side_bar_to_select}}']").addClass('active');
+      $("#logout_qq").click(function(event){
+        if(confirm("Logout?")) {
+          location.href="/yls_app/logout_qq";
+        }
+      });
+    });
+    </script>
     {% block extra_js %}
     {% endblock %}
   </body>
 </html>
 <script>
-// handle top bar select
-$(document).ready(function(event){
-  $("li[name='topbar_{{which_side_bar_to_select}}']").addClass('active');
-  $("#logout_qq").click(function(event){
-    if(confirm("Logout?")) {
-      location.href="/yls_app/logout_qq";
-    }
-  });
-});
+
 </script>
