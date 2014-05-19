@@ -6,7 +6,11 @@
 <link href="{% static 'yls_app/css/bootstrap-responsive.css' %}" rel="stylesheet">
 <!-- Font awesome - iconic font with IE7 support --> 
 <link href="{% static 'yls_app/css/font-awesome.css' %}" rel="stylesheet">
-
+<style type="text/css">
+.left-pad {
+  padding-left: 0cm;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -18,7 +22,7 @@
   <div id="to_render">
     {% for row in table %}
     <div class="row-fluid">
-      <ul class="thumbnails">
+      <ul class="thumbnails left-pad">
 	{% for good in row %}
 	<li class="span{{span}}">
           <div class="thumbnail">
