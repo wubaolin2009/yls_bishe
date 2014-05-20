@@ -263,6 +263,7 @@ def view_goods_category(request):
 		'span':SPAN,
 		'page_start':page_num, # only useful for the first time
 		'page_count':get_page_count(all_counts),
+		'qq_status': get_current_qq_status(request),
 		'page_url':'/yls_app/view_goods_category',
 	}
 	return render(request, 'yls_app/goods_view.html',param)
@@ -310,6 +311,7 @@ def view_goods_by_cate(request):
 
 	param = {
 		'which_side_bar_to_select': 2,
+		'qq_status':get_current_qq_status(request),
 		'title':u'商品信息',
 		'subtitle':subtitle,
 		'span': SPAN,
@@ -373,6 +375,7 @@ def view_weibouser(request):
 		'page_start':page_num,
 		'page_count': get_page_count(all_counts),
 		'page_url':'/yls_app/view_weibouser',
+		'qq_status':get_current_qq_status(request),
 	}
 	if recommended == 1:
 	    param['subtitle'] = '选择用户进行商品推荐'
@@ -404,6 +407,7 @@ def view_weibo_by_user(request):
 	param = {
 		'which_side_bar_to_select': 1,
 		'column_descs':column_descs,
+		'qq_status':get_current_qq_status(request),
 		'to_recommend':True,
 		'user_rec':user_name,
 		'title':u'微博',
