@@ -467,7 +467,7 @@ def rec(request):
 	# make the temperary image @ yls_app/goods_%d.png
 	xx = range(len(results[1][1]))
 	for i in range(1,len(results)):
-            user,goods = plt.plot(xx,results[0],'r.-',xx, results[i][1],'g.-')
+            user,goods = plt.plot(xx,results[0],'r:s',xx, results[i][1],'g-o')
 	    user.set_label("user")
 	    goods.set_label("Goods")
 	    plt.legend(loc='upper right', shadow=True)

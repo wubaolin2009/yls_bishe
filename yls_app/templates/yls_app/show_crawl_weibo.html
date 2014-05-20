@@ -50,10 +50,10 @@
         <!-- Table -->
         <table class="table"  id="table_tasks">
           <tr>            
-            <th>任务类型</th>
-            <th>任务状态</th>
-            <th>起始时间</th>
-            <th>结束时间</th>         
+            <th width="15%">任务类型</th>
+            <th width="35%">任务状态</th>
+            <th width="25%">起始时间</th>
+            <th width="25%">结束时间</th>         
           </tr>
         </table>
       </div>
@@ -89,11 +89,11 @@
       <!-- Table -->
       <table class="table" id="table_tasks_modal">
         <tr>            
-          <th>任务类型</th>
-          <th>任务状态</th>
-          <th>起始时间</th>
-          <th>结束时间</th>
-          <th>详细信息</th>        
+          <th width="15%">任务类型</th>
+          <th width="25%">任务状态</th>
+          <th width="15%">起始时间</th>
+          <th width="15%">结束时间</th>
+          <th width="30%">详细信息</th>        
         </tr>
       </table>
     </div>
@@ -106,6 +106,12 @@
 {% block extra_js %}
 <script>
 
+function get_div_progress_bar(width)
+{
+return "<div class='progress progress-striped active'>" + 
+       "<div class='progress-bar progress-bar-success' style='width:" + width + "%'>" + width + "%" + "</div></div>";
+}
+
 function append_tr(max_line, max_col, data, table_name, tr_name)
 {
   var count = 0;
@@ -114,9 +120,16 @@ function append_tr(max_line, max_col, data, table_name, tr_name)
     count += 1;
     var str_to_append = "<tr name = '"+tr_name+"'>";
     for(var value in data[task]) {
-      //console.log(value);
-      if (value >= max_col) break;
-      str_to_append += "<td style='vertical-align:middle'>" + data[task][value] + "</td>";
+      if(value >= max_col) break;
+      if(value == 0) {
+        if(data[task][0] == 'FETCH_RELATIONS') data[task][0] = 'FETCH_REL';
+      }
+      if(value == 1) {
+        str_to_append += "<td style='vertical-align:middle'>" + get_div_progress_bar(100) + "</td>";
+      }
+      else {
+        str_to_append += "<td style='vertical-align:middle'>" + data[task][value] + "</td>";
+      }
     }
     str_to_append += "</tr>"
     $("#" + table_name).append(str_to_append)
