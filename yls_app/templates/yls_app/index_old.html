@@ -1,0 +1,16 @@
+{% extends "yls_app/base.html" %}
+{% load staticfiles %}
+{% block title %} 欢迎 {% endblock %}
+
+{% block content %}
+<style type="text/css">
+#index_background {
+background-image:ur'{% static 'yls_app/images/placeholder-260x150.jpg' %}');
+padding-top:96px;
+}
+</style>
+<!--div id='index_background' -->
+<!--/div-->
+<image src='{% static 'yls_app/images/placeholder-260x150.jpg' %}'>
+</image>
+{% endblock %}

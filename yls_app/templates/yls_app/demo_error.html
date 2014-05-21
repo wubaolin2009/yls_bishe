@@ -1,0 +1,11 @@
+{% extends "yls_app/base.html" %}
+{% load staticfiles %}
+{% block title %} Demo Mode {% endblock %}
+{% block content %}
+<h3>
+This function can't be viewed under Demo mode.<br>
+</h3>
+
+To change it, modify yls_app/settings.py<br>
+Set YLS_APP_DEMO = False
+{% endblock %}

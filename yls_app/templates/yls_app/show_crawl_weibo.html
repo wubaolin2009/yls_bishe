@@ -12,19 +12,36 @@
       {% if qq_status.0 == False %}
       <a href='{{qq_status.1}}' class="list-group-item border_down border_up border_side">请先登录微博</a>
       {% else %}
+      {% if in_demo == False %}
       <a href='/yls_app/fetch_relations' class="list-group-item border_up border_side">抓取收听关系</a>
+      {% else %}
+      <a href='/yls_app/demo_error' class="list-group-item border_up border_side">抓取收听关系</a>
+      {% endif %}
       <!--a class="btn btn-warning" href='/yls_app/show_relations' type='button'> 查看关系  </a-->
+      {% if in_demo == False %}
       <a href='/yls_app/fetch_weibo' class="list-group-item border_down border_side border_side">抓取微博</a>
+      {% else %}
+      <a href='/yls_app/demo_error' class="list-group-item border_down border_side border_side">抓取微博</a>
+      {% endif %}
       {% endif %}
 
       <a href='/yls_app/view_weibouser' class="list-group-item border_up border_side border_side">查看微博用户</a>
+      {% if in_demo == False %}
       <a href='/yls_app/start_cut' class="list-group-item border_side">开始分词</a>
+      {% else %}
+      <a href='/yls_app/demo_error' class="list-group-item border_side">开始分词</a>
+      {% endif %}
       <a href='/yls_app/view_meaningful_words' class="list-group-item border_down border_side">查看有意义词</a>
       <!--a href='/yls_app/convert_to_final_dict' class="btn btn-primary" type="button">转换最终词典</a><br-->
-
+      {% if in_demo == False %}
       <a href='/yls_app/start_lda' class="list-group-item border_up border_side">开始LDA</a>
       <a href='/yls_app/run_at_lda' class="list-group-item border_side">开始AT</a>
       <a href='/yls_app/run_iat_lda' class="list-group-item border_down border_side">开始IAT</a>
+      {% else %}
+      <a href='/yls_app/demo_error' class="list-group-item border_up border_side">开始LDA</a>
+      <a href='/yls_app/demo_error' class="list-group-item border_side">开始AT</a>
+      <a href='/yls_app/demo_error' class="list-group-item border_down border_side">开始IAT</a>
+      {% endif %}
 
       <!--a class="btn btn-warning" href='/yls_app/goods_process' type="button">ProcessGoods</a><br-->
       <!--a class="btn btn-warning" href='/yls_app/goodsgroup_process' type="button">ProcessGoods_Group</a><br-->

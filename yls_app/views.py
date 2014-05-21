@@ -16,6 +16,7 @@ import at_lda
 import iat_lda
 import matplotlib.pyplot as plt
 import gibbs_lda
+import yls_app.settings
 from dangdang_utils import DangDang
 # Create your views here.
 
@@ -23,7 +24,7 @@ def index(request):
 	context = {'which_side_bar_to_select': 0,
 		'qq_status': get_current_qq_status(request)
 	}
-	return render(request, 'yls_app/index.html', context)
+	return render(request, 'yls_app/index_old.html', context)
     # raise Http404
     # poll = get_object_or_404(Poll, pk=poll_id)
 
@@ -73,7 +74,8 @@ def show_crawl_weibo(request):
 				'which_side_bar_to_select': 1, # tengxun weibo selected
 				'qq_status': get_current_qq_status(request),
 				'is_fetching':False,
-				'status':status,				
+				'status':status,
+				'in_demo':yls_app.settings.YLS_APP_DEMO,
 	}
 
 	#if status == u'已登录':
@@ -565,3 +567,11 @@ def logout_qq(request):
 	for i in request.session.keys():
 		del request.session[i]
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
+
+def demo_error(request):
+	return render(request,'yls_app/demo_error.html',
+		      {
+				'which_side_bar_to_select': 1, # tengxun weibo selected
+				'qq_status': get_current_qq_status(request),
+		      })
+

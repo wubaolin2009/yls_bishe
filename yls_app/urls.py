@@ -37,4 +37,5 @@ urlpatterns = patterns('',
     url(r'rec', views.rec, name='views_rec'),                     
     url(r'metro_home',views.metro_home,name='metro_home'),
     url(r'logout_qq',views.logout_qq,name='logout_qq'),
+    url(r'demo_error',views.demo_error,name='demo_error'),
 )

@@ -211,8 +211,8 @@ tr = [112,90,70,137,103,107,85,68,101,82,102,117,92,125,171,71,49,66,65,110]
 tr  = map(lambda k:k/75.0 + 0.2, tr)
 
 label1,label2 = plt.plot(xx,lda,'ro:',xx,tr,'g-')
-label1.set_label('LDA')
-label2.set_label('Traditional')
+label1.set_label('LDA_REC')
+label2.set_label('TF-IDF_REC')
 
 plt.legend(loc='upper left',shadow=True)
 plt.xlabel('Weibo User Index')
@@ -230,8 +230,8 @@ tr = [90,112,90,67,73,97,91,69,89,65,122,82,132,105,81,121,39,56,51,127]
 tr  = map(lambda k:k/75.0 + 0.3, tr)
 
 label1,label2 = plt.plot(xx,lda,'ro:',xx,tr,'g-')
-label1.set_label('LDA')
-label2.set_label('Traditional')
+label1.set_label('LDA_REC')
+label2.set_label('TF-IDF_REC')
 
 plt.legend(loc='upper left',shadow=True)
 plt.xlabel('Weibo User Index')
