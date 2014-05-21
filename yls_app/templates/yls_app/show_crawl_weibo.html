@@ -144,6 +144,27 @@ function append_tr(max_line, max_col, data, table_name, tr_name)
       if(value == 1) {
         str_to_append += "<td style='vertical-align:middle'>" + get_div_progress_bar(100) + "</td>";
       }
+      else if(value == 0){
+        if(data[task][0] == 'FETCH_REL'){
+            str_to_append += "<td style='vertical-align:middle'>" + "抓取关系" + "</td>";
+        }
+        if(data[task][0] == 'LDA') {
+            str_to_append += "<td style='vertical-align:middle'>" + "LDA算法" + "</td>";
+        }
+        if(data[task][0] == 'CUT') {
+            str_to_append += "<td style='vertical-align:middle'>" + "分词处理" + "</td>";
+        }
+        if(data[task][0] == 'FETCH_WEIBO'){
+            str_to_append += "<td style='vertical-align:middle'>" + "抓取微博" + "</td>";
+        }
+        if(data[task][0] == 'AT') {
+            str_to_append += "<td style='vertical-align:middle'>" + "AT算法" + "</td>";
+        }
+        if(data[task][0] == 'IAT'){
+            str_to_append += "<td style='vertical-align:middle'>" + "IAT算法" + "</td>";
+        }
+    
+      }
       else {
         str_to_append += "<td style='vertical-align:middle'>" + data[task][value] + "</td>";
       }

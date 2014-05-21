@@ -241,7 +241,7 @@ def view_goods_category(request):
 		title = cat_count[0]
 		counts_cat = '共有' + str(cat_count[1]['count']) + '种商品'
 		row = [image_url, title, counts_cat]
-		row.append('View Goods')
+		row.append('查看商品')
 		row.append('/yls_app/view_goods_by_cate?category='+title)
 		table.append(row)
 	new_table = []
@@ -293,7 +293,7 @@ def view_goods_by_cate(request):
 		product_cat = product.product_category
 		row = [product_html, product_name,'']
 		row[0] = product.product_image_url
-		row.append('View Good')
+		row.append('查看商品')
 		row.append('http://'+product_html) # link to click top title
 		table.append(row)
 
@@ -516,7 +516,7 @@ def goods_rec(request):
 	table = []
 	for a_product in result_to_in:
 		title,image,cat,html = a_product
-		table.append([image,title,cat,'View Good', 'http://' + html])
+		table.append([image,title,cat,'查看商品', 'http://' + html])
 	
 	new_table = []
 	SPAN = 3
@@ -536,7 +536,7 @@ def goods_rec(request):
 		'which_side_bar_to_select': 1,
 		'qq_status': get_current_qq_status(request),
 		'goods': result_to_in,
-		'title': '推荐的商品For' + user,
+		'title': '为' + user + '推荐的商品',
 		'span':SPAN,
 		'table':table,
 		})
