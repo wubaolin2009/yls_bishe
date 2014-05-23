@@ -189,6 +189,7 @@ def goods_home(request):
 		'qq_status': get_current_qq_status(request),
 		'goods_count':AjaxHandler.get_goods_count(),
 		'cat_count': GoodsProcessedGroup.objects.count(),
+		'in_demo':yls_app.settings.YLS_APP_DEMO,
 	})
 
 def fetch_relations(request):
@@ -569,9 +570,13 @@ def logout_qq(request):
 	return HttpResponseRedirect('/yls_app/crawl_weibo')
 
 def demo_error(request):
+	if 'bar' in request.GET.keys():
+		bar = int(request.GET['bar'])
+	else:
+		bar = 1
 	return render(request,'yls_app/demo_error.html',
 		      {
-				'which_side_bar_to_select': 1, # tengxun weibo selected
+				'which_side_bar_to_select': bar, # tengxun weibo selected
 				'qq_status': get_current_qq_status(request),
 		      })
 

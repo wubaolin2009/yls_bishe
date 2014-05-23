@@ -13,8 +13,13 @@
       <!--a href='/yls_app/convert_to_final_dict' class="btn btn-primary" type="button">抓取商品评论</a><br>-->
       <a href='/yls_app/view_goods_category' class="list-group-item border-side border_up border_down">商品分类</a>
       <a href='/yls_app/view_goods_by_cate?category=all&subtitle=所有' class="list-group-item border-side border_up border_down">查看商品</a>
+      {% if in_demo = False %}
       <a href='/yls_app/goods_process' class="list-group-item border-side border_up border_down">商品分词</a>
       <a href='/yls_app/goodsgroup_process' class="list-group-item border-side border_up border_down2">商品类别分词</a>
+      {% else %}
+      <a href='/yls_app/demo_error?bar=2' class="list-group-item border-side border_up border_down">商品分词</a>
+      <a href='/yls_app/demo_error?bar=2' class="list-group-item border-side border_up border_down2">商品类别分词</a>
+      {% endif %}
       <!--<a href='/yls_app/convert_to_final_dict' class="btn btn-info" type="button">分词</a><br>-->
       <!--<a href='/yls_app/convert_to_final_dict' class="btn btn-success" type="button">运行LDA</a><br>-->
     </ul>
