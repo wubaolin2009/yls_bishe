@@ -11,6 +11,21 @@ import bisect
 import time
 import pickle
 
+# Save the weibouser's digessting results
+def read_weibo_user_results():
+    if os.path.exists('yls_app/gibbs_weibo_user_results') == False:
+        return {}
+    f = open('yls_app/gibbs_weibo_user_results','r')
+    results = pickle.load(f)
+    f.close()
+    return results
+
+def save_weibo_user_results(cache):
+    f = open('yls_app/gibbs_weibo_user_results','w')
+    pickle.dump(cache,f)
+    f.close()
+
+WEIBO_USER_RESULTS_READY = False
 #this file implments the LDA algorithm by Gibss Sampling
 # Not an online algo
 
@@ -59,7 +74,7 @@ class LdaGibbsSampler:
             self.new_ndsum[i] = 0.0
         ''' nw sum '''
         for j in range(self.K):
-            self.nwsum[j] = 0.0
+            self.new_nwsum[j] = 0.0
         ''' nw '''
         for i in range(self.V):
             self.new_nw[i] = {}
@@ -113,6 +128,7 @@ class LdaGibbsSampler:
 
         p = {}
         for k in range(self.K):
+
             p[k] = (self.new_nw[w][k] + self.nw[w][k] + self.beta) / (self.nwsum[k] + self.new_nwsum[k] + self.V * self.beta) * (self.new_nd[m][k] + self.alpha) / (self.new_ndsum[m] + self.K * self.alpha)
         
         for k in range(1, len(p)): p[k] += p[k - 1]
@@ -789,7 +805,22 @@ def recommend_the_good_save_results(meaningful_words_path,user,cats_goods,weight
         print mm
     return to_ret
 
+# Train the model
+TRAIN_REC_GOOD = False
 def goods_rec(meaningful_words_path,user,number_goods = 20):
+    if TRAIN_REC_GOOD == False:
+        for uu in [user]:
+            return goods_rec_inner(meaningful_words_path,uu,number_goods)
+    for uu in WeiboUser.objects.all().iterator():
+         goods_rec_inner(meaningful_words_path,uu.name,number_goods)
+    assert False,"Train Finished!"
+
+def goods_rec_inner(meaningful_words_path,user,number_goods):
+    print 'Recommending for ', user
+    the_final_cache = read_weibo_user_results()
+    if user in the_final_cache.keys():
+        return the_final_cache[user]
+
     results = recommend(meaningful_words_path,user)
     results = results[1:]
     weighteds = [m[3] for m in results]
@@ -803,7 +834,10 @@ def goods_rec(meaningful_words_path,user,number_goods = 20):
 
     ret = recommend_the_good_save_results(meaningful_words_path,user,categories,numbers)
 
-    print ret
+    #print '----------WBL----------',ret
+    the_final_cache[user] = ret
+    save_weibo_user_results(the_final_cache)
+    
     return ret
     
 

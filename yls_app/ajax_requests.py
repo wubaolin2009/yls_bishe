@@ -73,7 +73,7 @@ class Cutter(object):
 #           return
 
     @staticmethod
-    def cut(group_by_user=False):
+    def cut(group_by_user=True):
         ''' When group_by_user == True, it will group all the token belonging to
         the same user to one entry to TweetUserToken, else TweetToken '''
         if group_by_user == False:
@@ -94,8 +94,9 @@ class Cutter(object):
                     print  count
             	final_results = []
                 for weibo in Tweet.objects.filter(name=weibo_user):
-                    if len(TweetToken.objects.filter(tweet=weibo.tweet_id)) > 0:
-                        continue
+                    # This is wrong !! Fixed!
+                    #if len(TweetToken.objects.filter(tweet=weibo.tweet_id)) > 0:
+                    #    continue
                     if count % 100 == 0:
                         the_task = Task.objects.filter(id=t.id)[0]
                         the_task.infomation = "Cutted:" + str(count) + "/" + str(target)
@@ -129,8 +130,8 @@ class Cutter(object):
     @staticmethod
     def start_cut():
         ''' start the thread of ing '''
-        thread.start_new(Cutter.cut, ())
-#        Cutter.cut()
+        #thread.start_new(Cutter.cut, ())
+        Cutter.cut()
 
 # 主要用于得到当前一些job的状态
 class AjaxHandler(object):
